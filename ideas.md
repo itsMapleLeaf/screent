@@ -1,0 +1,10 @@
+- screenshot:
+  - editor window will let you:
+    - crop to a region
+    - crop to a specific display
+    - crop to a window
+    - other editing things maybe
+    - save to file (closes window)
+    - copy to clipboard (closes window)
+    - upload and copy url (closes window)
+- recording

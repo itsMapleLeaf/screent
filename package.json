@@ -1,0 +1,54 @@
+{
+  "name": "screent",
+  "version": "0.0.0",
+  "description": "a fun and friendly screenshot and screen recording app",
+  "scripts": {
+    "dev": "npm-run-all --parallel --race --print-label dev-*",
+    "dev-build": "pnpm build-app -- --watch",
+    "dev-nodemon": "nodemon --exec electron dist/app/main.js",
+    "dev-editor": "vite src/editor",
+    "build": "npm-run-all --parallel --print-label build-*",
+    "build-app": "esbuild --bundle --outdir=dist/app --platform=node --external:electron src/app/main.ts",
+    "build-editor": "vite build src/editor",
+    "lint": "eslint --ext js,ts,tsx .",
+    "lint-fix": "npm run lint -- --fix",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@itsmapleleaf/configs": "^1.0.0",
+    "@types/node": "^16.11.9",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "electron": "^16.0.1",
+    "esbuild": "^0.13.15",
+    "esbuild-register": "^3.1.2",
+    "eslint": "^8.3.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-react": "^7.27.1",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "nodemon": "^2.0.15",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.4.1",
+    "typescript": "^4.5.2",
+    "vite": "^2.6.14"
+  },
+  "prettier": "@itsmapleleaf/configs/prettier",
+  "eslintConfig": {
+    "extends": [
+      "./node_modules/@itsmapleleaf/configs/eslint"
+    ],
+    "rules": {
+      "no-console": [
+        "warn",
+        {
+          "allow": [
+            "warn",
+            "error",
+            "info"
+          ]
+        }
+      ]
+    }
+  }
+}
