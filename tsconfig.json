@@ -1,6 +1,7 @@
 {
   "extends": "@itsmapleleaf/configs/tsconfig.app",
   "compilerOptions": {
-    "jsx": "react"
+    "jsx": "react",
+    "useDefineForClassFields": true
   }
 }

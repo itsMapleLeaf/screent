@@ -1,63 +1,33 @@
-import React, { useEffect, useRef } from "react"
+import { useObservable } from "micro-observables"
+import React, { useMemo, useRef } from "react"
 import { parseTruthy } from "../common/assert"
-import { rect } from "../common/Rect"
 import { vec } from "../common/Vec"
 import { solidButtonClass } from "./components"
 import { RegionSelector } from "./RegionSelector"
-import { useAnimationLoop } from "./useAnimationLoop"
 import { useElementRect } from "./useElementRect"
 
 export function App() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const regionSelectorRef = useRef<RegionSelector>()
-  const canvasRect = useElementRect(canvasRef)
+  const regionSelectorElementRef = useRef<HTMLCanvasElement>(null)
+  const regionSelectorElementRect = useElementRect(regionSelectorElementRef)
 
-  useEffect(() => {
-    const canvas = parseTruthy(canvasRef.current)
-    canvas.width = canvasRect.width
-    canvas.height = canvasRect.height
+  const regionSelector = useMemo(
+    () =>
+      new RegionSelector(
+        vec(regionSelectorElementRect.width, regionSelectorElementRect.height),
+      ),
+    [regionSelectorElementRect.width, regionSelectorElementRect.height],
+  )
 
-    regionSelectorRef.current = new RegionSelector(
-      rect(vec(0, 0), vec(canvas.width, canvas.height)),
-    )
-  }, [canvasRect])
-
-  useAnimationLoop(() => {
-    const region = regionSelectorRef.current?.region
-    if (!region) return
-
-    const canvas = parseTruthy(canvasRef.current)
-    const ctx = parseTruthy(canvas.getContext("2d"))
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-    ctx.fillStyle = ctx.strokeStyle = "#059669"
-    ctx.lineWidth = 1
-
-    // add adjustments for a pixel-perfect border
-    ctx.globalAlpha = 0.4
-    ctx.fillRect(
-      ...region.position.plus(vec(1)).components(),
-      ...region.size.minus(vec(2, 2)).components(),
-    )
-
-    ctx.globalAlpha = 1
-    ctx.strokeRect(
-      ...region.position.plus(vec(1.5)).components(),
-      ...region.size.minus(vec(2, 2)).components(),
-    )
-  })
+  const region = useObservable(regionSelector.region)
 
   const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     event.preventDefault()
 
-    const selector = parseTruthy(regionSelectorRef.current)
-
-    const action = selector.start(
+    const action = regionSelector.start(
       vec(event.nativeEvent.offsetX, event.nativeEvent.offsetY),
     )
 
-    const canvas = parseTruthy(canvasRef.current)
+    const canvas = parseTruthy(regionSelectorElementRef.current)
     const canvasPosition = vec(canvas.offsetLeft, canvas.offsetTop)
 
     const updateDrag = (moveEvent: PointerEvent) => {
@@ -79,11 +49,24 @@ export function App() {
 
   return (
     <div className="flex flex-col h-full gap-3 p-3">
-      <canvas
-        className="flex-1 block rounded-md bg-slate-800"
+      <section
+        className="relative flex-1 rounded-md select-none bg-slate-800"
         onPointerDown={handlePointerDown}
-        ref={canvasRef}
-      />
+        ref={regionSelectorElementRef}
+      >
+        {region && (
+          <div
+            className="pointer-events-none border-emerald-700 bg-emerald-700/50 border-[1px]"
+            style={{
+              position: "absolute",
+              left: region.left,
+              top: region.top,
+              width: region.width,
+              height: region.height,
+            }}
+          />
+        )}
+      </section>
       <section className="flex gap-3">
         <button className={solidButtonClass}>display 1</button>
         <hr className="bg-slate-700 border-none w-px h-[unset] my-1 mx-auto" />
