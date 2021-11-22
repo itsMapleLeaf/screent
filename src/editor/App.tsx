@@ -1,15 +1,13 @@
 import React, { useEffect, useRef } from "react"
 import { parseTruthy } from "../common/assert"
-import { clamp } from "../common/clamp"
+import { vec, Vec } from "../common/Vec"
 import { solidButtonClass } from "./components"
 import { useAnimationLoop } from "./useAnimationLoop"
 import { useElementRect } from "./useElementRect"
 
 type Region = {
-  x: number
-  y: number
-  width: number
-  height: number
+  position: Vec
+  size: Vec
 }
 
 export function App() {
@@ -38,87 +36,64 @@ export function App() {
     // add adjustments for a pixel-perfect border
     ctx.globalAlpha = 0.4
     ctx.fillRect(
-      region.x + 1,
-      region.y + 1,
-      region.width - 2,
-      region.height - 2,
+      ...region.position.plus(vec(1)).components(),
+      ...region.size.minus(vec(2, 2)).components(),
     )
 
     ctx.globalAlpha = 1
     ctx.strokeRect(
-      region.x + 1.5,
-      region.y + 1.5,
-      region.width - 2,
-      region.height - 2,
+      ...region.position.plus(vec(1.5)).components(),
+      ...region.size.minus(vec(2, 2)).components(),
     )
   })
 
   const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     event.preventDefault()
 
-    const canvas = event.currentTarget
-    const { offsetX, offsetY } = event.nativeEvent
-
     const region = (regionRef.current ??= {
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0,
+      position: vec(),
+      size: vec(),
     })
 
-    const initialOffset = {
-      x: offsetX - region.x,
-      y: offsetY - region.y,
-    }
+    const initialPointerPosition = vec(
+      event.nativeEvent.offsetX,
+      event.nativeEvent.offsetY,
+    )
 
-    const isInCurrentRegion =
-      offsetX >= region.x &&
-      offsetY >= region.y &&
-      offsetX <= region.x + region.width &&
-      offsetY <= region.y + region.height
+    const initialOffset = initialPointerPosition.minus(region.position)
+
+    const isInCurrentRegion = initialPointerPosition.isInArea(
+      region.position,
+      region.position.plus(region.size),
+    )
 
     const dragAction = isInCurrentRegion ? "move" : "draw"
 
     if (dragAction === "draw") {
-      region.x = offsetX
-      region.y = offsetY
-      region.width = 0
-      region.height = 0
+      region.position = initialPointerPosition
+      region.size = vec()
     }
+
+    const canvas = event.currentTarget
+    const canvasPosition = vec(canvas.offsetLeft, canvas.offsetTop)
+    const canvasSize = vec(canvas.clientWidth, canvas.clientHeight)
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
       moveEvent.preventDefault()
 
-      const localX = clamp(
-        moveEvent.pageX - canvas.offsetLeft,
-        0,
-        canvas.clientWidth,
-      )
-
-      const localY = clamp(
-        moveEvent.pageY - canvas.offsetTop,
-        0,
-        canvas.clientHeight,
-      )
+      const pointerPosition = vec(moveEvent.pageX, moveEvent.pageY)
+        .minus(canvasPosition)
+        .clamp(vec(), canvasSize)
 
       if (dragAction === "draw") {
-        region.x = Math.min(offsetX, localX)
-        region.y = Math.min(offsetY, localY)
-        region.width = Math.abs(offsetX - localX)
-        region.height = Math.abs(offsetY - localY)
+        region.position = Vec.lesser(initialPointerPosition, pointerPosition)
+        region.size = initialPointerPosition.minus(pointerPosition).abs()
       }
 
       if (dragAction === "move") {
-        region.x = clamp(
-          localX - initialOffset.x,
-          0,
-          canvas.clientWidth - region.width,
-        )
-        region.y = clamp(
-          localY - initialOffset.y,
-          0,
-          canvas.clientHeight - region.height,
-        )
+        region.position = pointerPosition
+          .minus(initialOffset)
+          .clamp(vec(), canvasSize.minus(region.size))
       }
     }
 
@@ -135,15 +110,20 @@ export function App() {
     <div className="h-full p-3 gap-3 flex flex-col">
       <canvas
         className="flex-1 bg-slate-800 rounded-md block"
-        ref={canvasRef}
         onPointerDown={handlePointerDown}
+        ref={canvasRef}
       />
       <section className="flex gap-3">
         <button className={solidButtonClass}>display 1</button>
-        <button className={solidButtonClass}>display 2</button>
+        <hr className="bg-slate-700 border-none w-px h-[unset] my-1 mx-auto" />
         <button className={solidButtonClass}>all displays</button>
-        <hr className="bg-slate-700 border-none w-px h-[unset] my-1" />
-        <button className={solidButtonClass}>all displays</button>
+        <hr className="bg-slate-700 border-none w-px h-[unset] my-1 mx-auto" />
+        <button className={solidButtonClass}>save</button>
+        <button className={solidButtonClass}>
+          copy file (only shows after save)
+        </button>
+        <hr className="bg-slate-700 border-none w-px h-[unset] my-1 mx-auto" />
+        <button className={solidButtonClass}>copy image</button>
       </section>
     </div>
   )
