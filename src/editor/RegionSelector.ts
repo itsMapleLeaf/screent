@@ -30,6 +30,11 @@ export class RegionSelectorCreateAction implements RegionSelectorAction {
   ) {}
 
   update(position: Vec) {
+    position = position.clamp(
+      this.selector.area.topLeft,
+      this.selector.area.bottomRight,
+    )
+
     this.selector.region = this.selector.region
       ?.moveTo(Vec.lesser(this.initialPosition, position))
       .resize(this.initialPosition.minus(position).abs())
