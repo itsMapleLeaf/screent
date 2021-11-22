@@ -1,6 +1,6 @@
 import { Menu, Tray } from "electron"
 import { name as appName } from "../../package.json"
-import { getAssetPath } from "../common/getAssetPath"
+import { getAssetPath } from "../common/paths"
 import type { Editor } from "./editor"
 
 export class TrayManager {

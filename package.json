@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "npm-run-all --parallel --race --print-label dev-*",
     "dev-build": "pnpm build-app -- --watch",
-    "dev-nodemon": "nodemon --exec electron dist/app/main.js",
+    "dev-nodemon": "nodemon --exec electron --watch dist dist/app/main.js",
     "dev-editor": "vite src/editor",
     "build": "npm-run-all --parallel --print-label build-*",
     "build-app": "esbuild --bundle --outdir=dist/app --platform=node --external:electron src/app/main.ts",
@@ -21,6 +21,7 @@
     "@types/react-dom": "^17.0.11",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
+    "clsx": "^1.1.1",
     "electron": "^16.0.1",
     "esbuild": "^0.13.15",
     "esbuild-register": "^3.1.2",
