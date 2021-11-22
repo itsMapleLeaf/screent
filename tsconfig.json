@@ -1,3 +1,6 @@
 {
-  "extends": "@itsmapleleaf/configs/tsconfig.app"
+  "extends": "@itsmapleleaf/configs/tsconfig.app",
+  "compilerOptions": {
+    "jsx": "react"
+  }
 }
