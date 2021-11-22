@@ -20,6 +20,14 @@ export class Rect {
     return this.position.y + this.size.y
   }
 
+  get width() {
+    return this.size.x
+  }
+
+  get height() {
+    return this.size.y
+  }
+
   get topLeft() {
     return this.position
   }
