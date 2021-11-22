@@ -58,11 +58,11 @@ export function App() {
     )
 
     const canvas = parseTruthy(canvasRef.current)
-    const canvasSize = vec(canvas.clientLeft, canvas.clientTop)
+    const canvasPosition = vec(canvas.offsetLeft, canvas.offsetTop)
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
       moveEvent.preventDefault()
-      action.update(vec(moveEvent.pageX, moveEvent.pageY).minus(canvasSize))
+      action.update(vec(moveEvent.pageX, moveEvent.pageY).minus(canvasPosition))
     }
 
     const handlePointerUp = (event: PointerEvent) => {

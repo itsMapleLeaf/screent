@@ -32,7 +32,7 @@ export class RegionSelectorCreateAction implements RegionSelectorAction {
   update(position: Vec) {
     this.selector.region = this.selector.region
       ?.moveTo(Vec.lesser(this.initialPosition, position))
-      .resize(this.initialPosition.minus(position))
+      .resize(this.initialPosition.minus(position).abs())
   }
 }
 
