@@ -1,6 +1,8 @@
+import type { Observable } from "micro-observables"
 import { useObservable } from "micro-observables"
 import React, { useMemo, useRef } from "react"
 import { parseTruthy } from "../common/assert"
+import type { Rect } from "../common/Rect"
 import { vec } from "../common/Vec"
 import { solidButtonClass } from "./components"
 import { RegionSelector } from "./RegionSelector"
@@ -17,8 +19,6 @@ export function App() {
       ),
     [regionSelectorElementRect.width, regionSelectorElementRect.height],
   )
-
-  const region = useObservable(regionSelector.region)
 
   const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     event.preventDefault()
@@ -54,18 +54,7 @@ export function App() {
         onPointerDown={handlePointerDown}
         ref={regionSelectorElementRef}
       >
-        {region && (
-          <div
-            className="pointer-events-none border-emerald-700 bg-emerald-700/50 border-[1px]"
-            style={{
-              position: "absolute",
-              left: region.left,
-              top: region.top,
-              width: region.width,
-              height: region.height,
-            }}
-          />
-        )}
+        <RegionElement region={regionSelector.region} />
       </section>
       <section className="flex gap-3">
         <button className={solidButtonClass}>display 1</button>
@@ -80,5 +69,30 @@ export function App() {
         <button className={solidButtonClass}>copy image</button>
       </section>
     </div>
+  )
+}
+
+function RegionElement({
+  region: regionObservable,
+}: {
+  region: Observable<Rect | undefined>
+}) {
+  const region = useObservable(regionObservable)
+
+  if (!region) {
+    return null
+  }
+
+  return (
+    <div
+      className="pointer-events-none border-emerald-700 bg-emerald-700/50 border-[1px]"
+      style={{
+        position: "absolute",
+        left: region.left,
+        top: region.top,
+        width: region.width,
+        height: region.height,
+      }}
+    />
   )
 }
