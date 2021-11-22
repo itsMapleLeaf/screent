@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import { parseTruthy } from "../common/assert"
+import { clamp } from "../common/clamp"
 import { solidButtonClass } from "./components"
 import { useAnimationLoop } from "./useAnimationLoop"
 import { useElementRect } from "./useElementRect"
@@ -33,29 +34,92 @@ export function App() {
 
     ctx.fillStyle = ctx.strokeStyle = "#059669"
     ctx.lineWidth = 1
+
+    // add adjustments for a pixel-perfect border
     ctx.globalAlpha = 0.4
-    ctx.fillRect(region.x, region.y, region.width, region.height)
+    ctx.fillRect(
+      region.x + 1,
+      region.y + 1,
+      region.width - 2,
+      region.height - 2,
+    )
 
     ctx.globalAlpha = 1
-    ctx.strokeRect(region.x, region.y, region.width, region.height)
+    ctx.strokeRect(
+      region.x + 1.5,
+      region.y + 1.5,
+      region.width - 2,
+      region.height - 2,
+    )
   })
 
-  const handlePointerDown = (
-    event: React.PointerEvent<HTMLCanvasElement>,
-  ): void => {
+  const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     event.preventDefault()
 
-    const region = (regionRef.current = {
-      x: event.nativeEvent.offsetX,
-      y: event.nativeEvent.offsetY,
+    const canvas = event.currentTarget
+    const { offsetX, offsetY } = event.nativeEvent
+
+    const region = (regionRef.current ??= {
+      x: 0,
+      y: 0,
       width: 0,
       height: 0,
     })
 
+    const initialOffset = {
+      x: offsetX - region.x,
+      y: offsetY - region.y,
+    }
+
+    const isInCurrentRegion =
+      offsetX >= region.x &&
+      offsetY >= region.y &&
+      offsetX <= region.x + region.width &&
+      offsetY <= region.y + region.height
+
+    const dragAction = isInCurrentRegion ? "move" : "draw"
+
+    if (dragAction === "draw") {
+      region.x = offsetX
+      region.y = offsetY
+      region.width = 0
+      region.height = 0
+    }
+
     const handlePointerMove = (moveEvent: PointerEvent) => {
       moveEvent.preventDefault()
-      region.width = moveEvent.offsetX - region.x
-      region.height = moveEvent.offsetY - region.y
+
+      const localX = clamp(
+        moveEvent.pageX - canvas.offsetLeft,
+        0,
+        canvas.clientWidth,
+      )
+
+      const localY = clamp(
+        moveEvent.pageY - canvas.offsetTop,
+        0,
+        canvas.clientHeight,
+      )
+
+      if (dragAction === "draw") {
+        region.x = Math.min(offsetX, localX)
+        region.y = Math.min(offsetY, localY)
+        region.width = Math.abs(offsetX - localX)
+        region.height = Math.abs(offsetY - localY)
+      }
+
+      if (dragAction === "move") {
+        region.x = clamp(
+          localX - initialOffset.x,
+          0,
+          canvas.clientWidth - region.width,
+        )
+        region.y = clamp(
+          localY - initialOffset.y,
+          0,
+          canvas.clientHeight - region.height,
+        )
+      }
     }
 
     const handlePointerUp = (event: PointerEvent) => {
