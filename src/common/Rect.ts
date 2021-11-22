@@ -20,10 +20,6 @@ export class Rect {
     return this.position.y + this.size.y
   }
 
-  get center() {
-    return vec(this.left + this.size.x / 2, this.top + this.size.y / 2)
-  }
-
   get topLeft() {
     return this.position
   }
@@ -38,6 +34,10 @@ export class Rect {
 
   get bottomRight() {
     return vec(this.right, this.bottom)
+  }
+
+  get center() {
+    return this.position.plus(this.size.times(0.5))
   }
 
   moveTo(position: Vec) {
