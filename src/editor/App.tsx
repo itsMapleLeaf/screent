@@ -60,24 +60,27 @@ export function App() {
     const canvas = parseTruthy(canvasRef.current)
     const canvasPosition = vec(canvas.offsetLeft, canvas.offsetTop)
 
-    const handlePointerMove = (moveEvent: PointerEvent) => {
+    const updateDrag = (moveEvent: PointerEvent) => {
       moveEvent.preventDefault()
       action.update(vec(moveEvent.pageX, moveEvent.pageY).minus(canvasPosition))
     }
 
-    const handlePointerUp = (event: PointerEvent) => {
+    const finishDrag = (event: Event) => {
       event.preventDefault()
-      window.removeEventListener("pointermove", handlePointerMove)
+      window.removeEventListener("pointermove", updateDrag)
+      window.removeEventListener("pointerup", finishDrag)
+      window.removeEventListener("blur", finishDrag)
     }
 
-    window.addEventListener("pointermove", handlePointerMove)
-    window.addEventListener("pointerup", handlePointerUp, { once: true })
+    window.addEventListener("pointermove", updateDrag)
+    window.addEventListener("pointerup", finishDrag)
+    window.addEventListener("blur", finishDrag)
   }
 
   return (
-    <div className="h-full p-3 gap-3 flex flex-col">
+    <div className="flex flex-col h-full gap-3 p-3">
       <canvas
-        className="flex-1 bg-slate-800 rounded-md block"
+        className="flex-1 block rounded-md bg-slate-800"
         onPointerDown={handlePointerDown}
         ref={canvasRef}
       />
