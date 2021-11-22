@@ -1,28 +1,29 @@
 import React, { useEffect, useRef } from "react"
 import { parseTruthy } from "../common/assert"
-import { vec, Vec } from "../common/Vec"
+import { rect } from "../common/Rect"
+import { vec } from "../common/Vec"
 import { solidButtonClass } from "./components"
+import { RegionSelector } from "./RegionSelector"
 import { useAnimationLoop } from "./useAnimationLoop"
 import { useElementRect } from "./useElementRect"
 
-type Region = {
-  position: Vec
-  size: Vec
-}
-
 export function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const regionRef = useRef<Region>()
-  const rect = useElementRect(canvasRef)
+  const regionSelectorRef = useRef<RegionSelector>()
+  const canvasRect = useElementRect(canvasRef)
 
   useEffect(() => {
     const canvas = parseTruthy(canvasRef.current)
-    canvas.width = rect.width
-    canvas.height = rect.height
-  }, [rect])
+    canvas.width = canvasRect.width
+    canvas.height = canvasRect.height
+
+    regionSelectorRef.current = new RegionSelector(
+      rect(vec(0, 0), vec(canvas.width, canvas.height)),
+    )
+  }, [canvasRect])
 
   useAnimationLoop(() => {
-    const region = regionRef.current
+    const region = regionSelectorRef.current?.region
     if (!region) return
 
     const canvas = parseTruthy(canvasRef.current)
@@ -50,51 +51,18 @@ export function App() {
   const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     event.preventDefault()
 
-    const region = (regionRef.current ??= {
-      position: vec(),
-      size: vec(),
-    })
+    const selector = parseTruthy(regionSelectorRef.current)
 
-    const initialPointerPosition = vec(
-      event.nativeEvent.offsetX,
-      event.nativeEvent.offsetY,
+    const action = selector.start(
+      vec(event.nativeEvent.offsetX, event.nativeEvent.offsetY),
     )
 
-    const initialOffset = initialPointerPosition.minus(region.position)
-
-    const isInCurrentRegion = initialPointerPosition.isInArea(
-      region.position,
-      region.position.plus(region.size),
-    )
-
-    const dragAction = isInCurrentRegion ? "move" : "draw"
-
-    if (dragAction === "draw") {
-      region.position = initialPointerPosition
-      region.size = vec()
-    }
-
-    const canvas = event.currentTarget
-    const canvasPosition = vec(canvas.offsetLeft, canvas.offsetTop)
-    const canvasSize = vec(canvas.clientWidth, canvas.clientHeight)
+    const canvas = parseTruthy(canvasRef.current)
+    const canvasSize = vec(canvas.clientLeft, canvas.clientTop)
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
       moveEvent.preventDefault()
-
-      const pointerPosition = vec(moveEvent.pageX, moveEvent.pageY)
-        .minus(canvasPosition)
-        .clamp(vec(), canvasSize)
-
-      if (dragAction === "draw") {
-        region.position = Vec.lesser(initialPointerPosition, pointerPosition)
-        region.size = initialPointerPosition.minus(pointerPosition).abs()
-      }
-
-      if (dragAction === "move") {
-        region.position = pointerPosition
-          .minus(initialOffset)
-          .clamp(vec(), canvasSize.minus(region.size))
-      }
+      action.update(vec(moveEvent.pageX, moveEvent.pageY).minus(canvasSize))
     }
 
     const handlePointerUp = (event: PointerEvent) => {
