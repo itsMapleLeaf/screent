@@ -14,7 +14,7 @@ export function useWindowEvent<EventName extends keyof WindowEventMap>(
 
     return () => {
       for (const event of events) {
-        window.addEventListener(event, handler, options)
+        window.removeEventListener(event, handler, options)
       }
     }
   })
