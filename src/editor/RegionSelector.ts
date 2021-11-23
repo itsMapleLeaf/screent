@@ -3,7 +3,7 @@ import { Rect } from "../common/Rect"
 import { vec, Vec } from "../common/Vec"
 
 export class RegionSelector {
-  region = observable<Rect | undefined>(undefined)
+  readonly region = observable<Rect | undefined>(undefined)
   readonly area: Rect
 
   constructor(areaSize: Vec) {
