@@ -9,9 +9,11 @@
 - [x] press recording hotkey
 - [x] run slop for a recording region
 - [x] show the recording frame sized to the region
-- [ ] style the recording frame with a fancy border and button
-- [ ] record (not sure how to not record the frame itself??)
-- [ ] stop recording via button on frame / hotkey / tray icon
+- [x] style the recording frame with a fancy border and buttons
+- [ ] record
+- [ ] finish recording via button
+- [ ] cancel recording via button
+- [ ] figure out how to not record the actual frame
 - [ ] save to file
 - [ ] show file in file browser
 

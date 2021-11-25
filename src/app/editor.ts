@@ -1,5 +1,4 @@
 import { app, BrowserWindow } from "electron"
-import { pathToFileURL } from "node:url"
 import { isDev } from "../common/constants"
 import { getDistPath } from "../common/paths"
 
@@ -27,10 +26,9 @@ export class Editor {
     })
 
     if (isDev) {
-      await win.loadURL("http://localhost:3000/src/editor.html")
+      await win.loadURL("http://localhost:3000/src/editor/")
     } else {
-      const url = pathToFileURL(getDistPath("renderer/editor.html"))
-      await win.loadURL(url.toString())
+      await win.loadFile(getDistPath("renderer/editor/index.html"))
     }
 
     return win
