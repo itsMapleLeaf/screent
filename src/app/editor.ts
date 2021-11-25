@@ -19,7 +19,7 @@ export class Editor {
 
   async createWindow() {
     this.win = new BrowserWindow({
-      // show: false,
+      show: false,
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
