@@ -57,6 +57,11 @@
       "cjs"
     ]
   },
+  "postcss": {
+    "plugins": {
+      "tailwindcss": {}
+    }
+  },
   "prettier": "@itsmapleleaf/configs/prettier",
   "eslintConfig": {
     "extends": [
