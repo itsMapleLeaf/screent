@@ -5,5 +5,6 @@ export default defineConfig(({ command }) => ({
   publicDir: command === "build" ? "." : "/",
   build: {
     outDir: getDistPath("editor"),
+    emptyOutDir: true,
   },
 }))
