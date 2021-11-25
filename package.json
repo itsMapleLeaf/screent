@@ -55,8 +55,7 @@
     "target": "node16",
     "format": [
       "cjs"
-    ],
-    "clean": true
+    ]
   },
   "prettier": "@itsmapleleaf/configs/prettier",
   "eslintConfig": {
