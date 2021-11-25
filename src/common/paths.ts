@@ -17,10 +17,10 @@ export function getProjectPath(...localPathParts: string[]) {
   return join(projectRoot, ...localPathParts)
 }
 
-export function getAssetPath(localPath: string) {
-  return getProjectPath("assets", localPath)
+export function getAssetPath(...segments: string[]) {
+  return getProjectPath("assets", ...segments)
 }
 
-export function getDistPath(localPath: string) {
-  return getProjectPath("dist", localPath)
+export function getDistPath(...segments: string[]) {
+  return getProjectPath("dist", ...segments)
 }
