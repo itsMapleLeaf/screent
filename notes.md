@@ -6,7 +6,7 @@
 
 ## recording flow
 
-- [ ] press recording hotkey
+- [x] press recording hotkey
 - [ ] run slop for a recording region
 - [ ] show the recording frame sized to the region
 - [ ] record (not sure how to not record the frame itself??)

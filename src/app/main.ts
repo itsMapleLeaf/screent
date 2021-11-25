@@ -1,11 +1,16 @@
-import { app } from "electron"
+import { dialog } from "electron"
+import { toError } from "../common/toError"
 import { Editor } from "./editor"
-import { TrayManager } from "./tray"
+import { MainTray } from "./main-tray"
+import { VideoRecorder } from "./video-recorder"
 
-const editor = new Editor()
-const tray = new TrayManager(editor)
-
-app.on("ready", () => {
-  editor.createWindow().catch(console.error)
-  tray.create()
-})
+void (async () => {
+  try {
+    const editor = await Editor.create()
+    const tray = await MainTray.create(editor)
+    await VideoRecorder.init()
+  } catch (error) {
+    const { stack, message } = toError(error)
+    dialog.showErrorBox("Error", stack || message)
+  }
+})()
