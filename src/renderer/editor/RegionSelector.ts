@@ -1,6 +1,6 @@
 import { observable } from "micro-observables"
-import { Rect } from "../common/Rect"
-import { vec, Vec } from "../common/Vec"
+import { Rect } from "../../common/Rect"
+import { vec, Vec } from "../../common/Vec"
 
 export class RegionSelector {
   readonly region = observable<Rect | undefined>(undefined)
