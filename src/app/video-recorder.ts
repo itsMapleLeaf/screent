@@ -1,12 +1,71 @@
 import { app } from "electron"
-import { tryRegisterShortcut } from "./tryRegisterShortcut"
+import { z } from "zod"
+import { safeJsonParse } from "../common/json"
+import { importExeca } from "./execa"
+import { tryRegisterShortcut } from "./try-register-shortcut"
+
+type Region = z.infer<typeof regionSchema>
+const regionSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+  width: z.number(),
+  height: z.number(),
+})
 
 export class VideoRecorder {
-  static async init() {
+  private status: "idle" | "recording" = "idle"
+
+  static async create() {
     await app.whenReady()
 
+    const recorder = new VideoRecorder()
+
     tryRegisterShortcut("Meta+Alt+F12", () => {
-      console.log("Recording video")
+      recorder.recordVideo().catch(console.error)
     })
+
+    return recorder
+  }
+
+  async recordVideo() {
+    if (this.status !== "idle") return
+    this.status = "recording"
+
+    const region = await VideoRecorder.getRegion()
+    console.log(region)
+
+    this.status = "idle"
+  }
+
+  private static async getRegion(): Promise<Region | undefined> {
+    const execa = await importExeca()
+
+    const regionResult = await execa(
+      "slop",
+      [
+        "--highlight",
+        "--color=0.3,0.4,0.6,0.4",
+        `--format={ "x": %x, "y": %y, "width": %w, "height": %h }`,
+      ],
+      { reject: false },
+    )
+    if (regionResult.failed) {
+      console.error(regionResult.stderr)
+      return
+    }
+
+    const regionJson = safeJsonParse(regionResult.stdout)
+    if (regionJson instanceof Error) {
+      console.error("Invalid region JSON:", regionJson)
+      return
+    }
+
+    const regionParseResult = regionSchema.safeParse(regionJson)
+    if (!regionParseResult.success) {
+      console.error("Invalid region data:", regionParseResult.error.issues)
+      return
+    }
+
+    return regionParseResult.data
   }
 }

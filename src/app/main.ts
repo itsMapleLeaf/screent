@@ -7,8 +7,8 @@ import { VideoRecorder } from "./video-recorder"
 void (async () => {
   try {
     const editor = await Editor.create()
-    const tray = await MainTray.create(editor)
-    await VideoRecorder.init()
+    await VideoRecorder.create()
+    await MainTray.create(editor)
   } catch (error) {
     const { stack, message } = toError(error)
     dialog.showErrorBox("Error", stack || message)
