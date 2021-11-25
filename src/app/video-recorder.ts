@@ -1,4 +1,4 @@
-import { app } from "electron"
+import { app, BrowserWindow } from "electron"
 import { z } from "zod"
 import { safeJsonParse } from "../common/json"
 import { importExeca } from "./execa"
@@ -15,10 +15,13 @@ const regionSchema = z.object({
 export class VideoRecorder {
   private status: "idle" | "recording" = "idle"
 
+  private constructor(private readonly recordingFrame: BrowserWindow) {}
+
   static async create() {
     await app.whenReady()
 
-    const recorder = new VideoRecorder()
+    const recordingFrame = await VideoRecorder.createRecordingFrameWindow()
+    const recorder = new VideoRecorder(recordingFrame)
 
     tryRegisterShortcut("Meta+Alt+F12", () => {
       recorder.recordVideo().catch(console.error)
@@ -27,12 +30,22 @@ export class VideoRecorder {
     return recorder
   }
 
+  private static async createRecordingFrameWindow() {
+    const win = new BrowserWindow({
+      show: false,
+      frame: false,
+    })
+    return win
+  }
+
   async recordVideo() {
     if (this.status !== "idle") return
     this.status = "recording"
 
     const region = await VideoRecorder.getRegion()
-    console.log(region)
+    if (!region) return
+
+    await this.applyRegionToRecordingFrame(region)
 
     this.status = "idle"
   }
@@ -67,5 +80,10 @@ export class VideoRecorder {
     }
 
     return regionParseResult.data
+  }
+
+  private async applyRegionToRecordingFrame(region: Region) {
+    this.recordingFrame.setBounds(region)
+    this.recordingFrame.show()
   }
 }
