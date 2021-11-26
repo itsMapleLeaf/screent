@@ -1,21 +1,24 @@
-import { app, BrowserWindow } from "electron"
+import { app, BrowserWindow, shell } from "electron"
+import { createWriteStream } from "fs"
+import { mkdir } from "fs/promises"
+import { unlink } from "node:fs/promises"
+import { dirname } from "path"
+import { pipeline } from "stream/promises"
 import { z } from "zod"
+import { name as appName } from "../../package.json"
 import { isDev } from "../common/constants"
-import { safeJsonParse } from "../common/json"
+import { isFile } from "../common/isFile"
+import { logErrorStack } from "../common/logErrorStack"
 import { getDistPath } from "../common/paths"
+import type { Rect } from "../common/Rect"
+import { rect } from "../common/Rect"
+import { vec } from "../common/Vec"
 import { importExeca } from "./execa"
+import { getVideoRecordingsPath } from "./paths"
 import { tryRegisterShortcut } from "./try-register-shortcut"
 
-type Region = z.infer<typeof regionSchema>
-const regionSchema = z.object({
-  x: z.number(),
-  y: z.number(),
-  width: z.number(),
-  height: z.number(),
-})
-
 export class VideoRecorder {
-  private status: "idle" | "recording" = "idle"
+  private status: "ready" | "region-select" | "recording" = "ready"
 
   private constructor(
     private readonly regionFrame: BrowserWindow,
@@ -31,22 +34,71 @@ export class VideoRecorder {
     )
 
     tryRegisterShortcut("Meta+Alt+F12", () => {
-      recorder.recordVideo().catch(console.error)
+      recorder.recordVideo().catch(logErrorStack)
     })
 
     return recorder
   }
 
   async recordVideo() {
-    if (this.status !== "idle") return
-    this.status = "recording"
+    if (this.status !== "ready") return
 
-    const region = await VideoRecorder.getRegion()
-    if (region) {
-      await this.showWindows(region)
+    const timestamp = [
+      new Date().getFullYear(),
+      new Date().getMonth() + 1,
+      new Date().getDate(),
+      new Date().getHours(),
+      new Date().getMinutes(),
+      new Date().getSeconds(),
+    ].join("-")
+
+    const outputPath = getVideoRecordingsPath(`${appName}-${timestamp}.mp4`)
+
+    try {
+      this.status = "region-select"
+
+      const region = await VideoRecorder.getRegion()
+      this.showWindows(region)
+
+      this.status = "recording"
+
+      const args = [
+        // global options
+        `-f x11grab`,
+        `-loglevel warning`,
+
+        // input / x11grab options
+        `-framerate 30`,
+        `-video_size ${region.width}x${region.height}`,
+        `-i ${process.env.DISPLAY || ":0"}.0+${region.left},${region.top}`,
+
+        // output options
+        `-f mpeg`,
+        `-`,
+      ]
+
+      const execa = await importExeca()
+      const child = execa("ffmpeg", args.map((it) => it.split(/\s+/)).flat())
+      child.catch(logErrorStack)
+
+      setTimeout(() => {
+        child.stdin!.write("q")
+      }, 2000)
+
+      await mkdir(dirname(outputPath), { recursive: true })
+      await pipeline([child.stdout!, createWriteStream(outputPath)])
+
+      this.hideWindows()
+
+      shell.showItemInFolder(outputPath)
+    } catch (error) {
+      if (await isFile(outputPath)) {
+        await unlink(outputPath)
+      }
+      throw error
+    } finally {
+      this.status = "ready"
     }
-
-    this.status = "idle"
   }
 
   private static async createRecordingFrameWindow() {
@@ -118,48 +170,46 @@ export class VideoRecorder {
     return win
   }
 
-  private static async getRegion(): Promise<Region | undefined> {
+  private static async getRegion(): Promise<Rect> {
     const execa = await importExeca()
 
-    const regionResult = await execa(
-      "slop",
-      [
-        "--highlight",
-        "--color=0.3,0.4,0.6,0.4",
-        `--format={ "x": %x, "y": %y, "width": %w, "height": %h }`,
-      ],
-      { reject: false },
-    )
-    if (regionResult.failed) {
-      console.error(regionResult.stderr)
-      return
-    }
+    const result = await execa("slop", [
+      "--highlight",
+      "--color=0.3,0.4,0.6,0.4",
+      `--format={ "x": %x, "y": %y, "width": %w, "height": %h }`,
+    ])
 
-    const regionJson = safeJsonParse(regionResult.stdout)
-    if (regionJson instanceof Error) {
-      console.error("Invalid region JSON:", regionJson)
-      return
-    }
+    const regionSchema = z.object({
+      x: z.number(),
+      y: z.number(),
+      width: z.number(),
+      height: z.number(),
+    })
 
-    const regionParseResult = regionSchema.safeParse(regionJson)
-    if (!regionParseResult.success) {
-      console.error("Invalid region data:", regionParseResult.error.issues)
-      return
-    }
-
-    return regionParseResult.data
+    const region = regionSchema.parse(JSON.parse(result.stdout))
+    return rect(vec(region.x, region.y), vec(region.width, region.height))
   }
 
-  private async showWindows(region: Region) {
-    this.regionFrame.setBounds(region)
+  private showWindows(region: Rect) {
+    // size the frame so it doesn't show up in the recording
+    this.regionFrame.setBounds({
+      x: region.left - 1,
+      y: region.top - 1,
+      width: region.width + 2,
+      height: region.height + 2,
+    })
     this.regionFrame.show()
 
     this.controls.setBounds({
-      x: region.x,
-      y: region.y + region.height,
-      width: region.width,
+      x: region.left,
+      y: region.top + region.height,
       height: 40,
     })
     this.controls.show()
+  }
+
+  private hideWindows() {
+    this.regionFrame.hide()
+    this.controls.hide()
   }
 }

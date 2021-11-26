@@ -10,12 +10,13 @@
 - [x] run slop for a recording region
 - [x] show the recording frame sized to the region
 - [x] style the recording frame with a fancy border and buttons
-- [ ] record
+- [x] record
 - [ ] finish recording via button
 - [ ] cancel recording via button
-- [ ] figure out how to not record the actual frame
-- [ ] save to file
-- [ ] show file in file browser
+- [x] figure out how to not record the actual frame
+- [ ] figure out how to not record the buttons if they move in frame (?)
+- [x] save to file
+- [x] show file in file browser
 
 ## screenshot flow
 
@@ -33,3 +34,8 @@
 - [ ] save to file (closes window)
 - [ ] copy to clipboard (closes window)
 - [ ] upload and copy url (closes window)
+
+## future
+
+- [ ] configurable video path
+- [ ] configurable screenshot path

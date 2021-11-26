@@ -56,8 +56,12 @@ export class Rect {
     return rect(this.position.plus(delta), this.size)
   }
 
-  resize(size: Vec) {
+  resizeTo(size: Vec) {
     return rect(this.position, size)
+  }
+
+  resizeBy(delta: Vec) {
+    return rect(this.position, this.size.plus(delta))
   }
 
   containsPoint(point: Vec) {
