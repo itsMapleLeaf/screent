@@ -4,17 +4,21 @@
 - slop for getting region
 - ffmpeg for recording video
 
+## general stuff
+
+- [ ] tray icon
+
 ## recording flow
 
-- [x] press recording hotkey
+- [x] start recording via hotkey
+- [ ] start recording via tray
 - [x] run slop for a recording region
 - [x] show the recording frame sized to the region
 - [x] style the recording frame with a fancy border and buttons
 - [x] record
-- [ ] finish recording via button
-- [ ] cancel recording via button
+- [x] finish recording via hotkey
+- [ ] finish recording via tray
 - [x] figure out how to not record the actual frame
-- [ ] figure out how to not record the buttons if they move in frame (?)
 - [x] save to file
 - [x] show file in file browser
 
@@ -35,7 +39,8 @@
 - [ ] copy to clipboard (closes window)
 - [ ] upload and copy url (closes window)
 
-## future
+## extra
 
 - [ ] configurable video path
 - [ ] configurable screenshot path
+- [ ] move recording region while recording?

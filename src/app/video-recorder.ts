@@ -1,4 +1,5 @@
 import { app, BrowserWindow, shell } from "electron"
+import type { ExecaChildProcess } from "execa"
 import { createWriteStream } from "fs"
 import { mkdir } from "fs/promises"
 import { unlink } from "node:fs/promises"
@@ -17,88 +18,76 @@ import { importExeca } from "./execa"
 import { getVideoRecordingsPath } from "./paths"
 import { tryRegisterShortcut } from "./try-register-shortcut"
 
-export class VideoRecorder {
-  private status: "ready" | "region-select" | "recording" = "ready"
+type VideoRecorderState =
+  | { status: "ready" }
+  | { status: "preparing" }
+  | { status: "recording"; process: ExecaChildProcess; outputPath: string }
 
-  private constructor(
-    private readonly regionFrame: BrowserWindow,
-    private readonly controls: BrowserWindow,
-  ) {}
+export class VideoRecorder {
+  private state: VideoRecorderState = { status: "ready" }
+
+  private constructor(private readonly regionFrame: BrowserWindow) {}
 
   static async create() {
     await app.whenReady()
 
     const recorder = new VideoRecorder(
       await VideoRecorder.createRecordingFrameWindow(),
-      await VideoRecorder.createControlsWindow(),
     )
 
     tryRegisterShortcut("Meta+Alt+F12", () => {
-      recorder.recordVideo().catch(logErrorStack)
+      if (recorder.isReady()) {
+        recorder.startRecording().catch(logErrorStack)
+      }
+
+      if (recorder.isRecording()) {
+        recorder.stopRecording()
+      }
     })
 
     return recorder
   }
 
-  async recordVideo() {
-    if (this.status !== "ready") return
+  isReady() {
+    return this.state.status === "ready"
+  }
 
-    const timestamp = [
-      new Date().getFullYear(),
-      new Date().getMonth() + 1,
-      new Date().getDate(),
-      new Date().getHours(),
-      new Date().getMinutes(),
-      new Date().getSeconds(),
-    ].join("-")
+  isRecording() {
+    return this.state.status === "recording"
+  }
 
-    const outputPath = getVideoRecordingsPath(`${appName}-${timestamp}.mp4`)
+  async startRecording() {
+    if (this.state.status !== "ready") return
+    this.state = { status: "preparing" }
+
+    const outputPath = VideoRecorder.getRecordingOutputPath()
 
     try {
-      this.status = "region-select"
-
       const region = await VideoRecorder.getRegion()
       this.showWindows(region)
 
-      this.status = "recording"
+      const [child] = await VideoRecorder.createRecordingProcess(region)
 
-      const args = [
-        // global options
-        `-f x11grab`,
-        `-loglevel warning`,
-
-        // input / x11grab options
-        `-framerate 30`,
-        `-video_size ${region.width}x${region.height}`,
-        `-i ${process.env.DISPLAY || ":0"}.0+${region.left},${region.top}`,
-
-        // output options
-        `-f mpeg`,
-        `-`,
-      ]
-
-      const execa = await importExeca()
-      const child = execa("ffmpeg", args.map((it) => it.split(/\s+/)).flat())
-      child.catch(logErrorStack)
-
-      setTimeout(() => {
-        child.stdin!.write("q")
-      }, 2000)
+      this.state = { status: "recording", process: child, outputPath }
 
       await mkdir(dirname(outputPath), { recursive: true })
       await pipeline([child.stdout!, createWriteStream(outputPath)])
-
-      this.hideWindows()
-
-      shell.showItemInFolder(outputPath)
     } catch (error) {
       if (await isFile(outputPath)) {
         await unlink(outputPath)
       }
       throw error
     } finally {
-      this.status = "ready"
+      this.state = { status: "ready" }
     }
+  }
+
+  stopRecording() {
+    if (this.state.status !== "recording") return
+    this.state.process.stdin!.write("q")
+    shell.showItemInFolder(this.state.outputPath)
+    this.hideWindows()
+    this.state = { status: "ready" }
   }
 
   private static async createRecordingFrameWindow() {
@@ -136,38 +125,16 @@ export class VideoRecorder {
     return win
   }
 
-  private static async createControlsWindow(): Promise<BrowserWindow> {
-    const win = new BrowserWindow({
-      show: false,
-      frame: false,
-      transparent: true,
-      resizable: false,
-      movable: false,
-      fullscreenable: false,
-      skipTaskbar: true,
-      closable: false,
-      webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false,
-      },
-    })
-
-    // https://github.com/electron/electron/issues/12445#issuecomment-800413955
-    win.on("ready-to-show", () => {
-      win.setAlwaysOnTop(true)
-      win.focus()
-    })
-
-    if (isDev) {
-      await win.loadURL("http://localhost:3000/video-recording-controls/")
-      win.webContents.openDevTools()
-    } else {
-      await win.loadFile(
-        getDistPath("renderer/video-recording-controls/index.html"),
-      )
-    }
-
-    return win
+  private static getRecordingOutputPath() {
+    const timestamp = [
+      new Date().getFullYear(),
+      new Date().getMonth() + 1,
+      new Date().getDate(),
+      new Date().getHours(),
+      new Date().getMinutes(),
+      new Date().getSeconds(),
+    ].join("-")
+    return getVideoRecordingsPath(`${appName}-${timestamp}.mp4`)
   }
 
   private static async getRegion(): Promise<Rect> {
@@ -190,6 +157,30 @@ export class VideoRecorder {
     return rect(vec(region.x, region.y), vec(region.width, region.height))
   }
 
+  private static async createRecordingProcess(
+    region: Rect,
+  ): Promise<[ExecaChildProcess<string>]> {
+    const args = [
+      // global options
+      `-f x11grab`,
+      `-loglevel warning`,
+
+      // input / x11grab options
+      `-framerate 30`,
+      `-video_size ${region.width}x${region.height}`,
+      `-i ${process.env.DISPLAY || ":0"}.0+${region.left},${region.top}`,
+
+      // output options
+      `-f mpeg`,
+      `-`,
+    ]
+
+    const execa = await importExeca()
+    const child = execa("ffmpeg", args.map((it) => it.split(/\s+/)).flat())
+    child.catch(logErrorStack)
+    return [child]
+  }
+
   private showWindows(region: Rect) {
     // size the frame so it doesn't show up in the recording
     this.regionFrame.setBounds({
@@ -199,17 +190,9 @@ export class VideoRecorder {
       height: region.height + 2,
     })
     this.regionFrame.show()
-
-    this.controls.setBounds({
-      x: region.left,
-      y: region.top + region.height,
-      height: 40,
-    })
-    this.controls.show()
   }
 
   private hideWindows() {
     this.regionFrame.hide()
-    this.controls.hide()
   }
 }
