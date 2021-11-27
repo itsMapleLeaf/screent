@@ -1,5 +1,5 @@
 import { app } from "electron"
-import { logErrorStack } from "../common/log-error-stack"
+import { logErrorStack } from "../common/errors"
 import { showErrorDialog } from "./error-dialog"
 import { createMainTray } from "./main-tray"
 import { tryRegisterShortcut } from "./shortcut"

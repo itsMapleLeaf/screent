@@ -1,4 +1,4 @@
-import { raise } from "./raise"
+import { raise } from "./errors"
 import type { Falsy } from "./types"
 
 export function parseTruthy<T>(value: T | Falsy): T {

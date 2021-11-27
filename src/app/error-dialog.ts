@@ -1,5 +1,5 @@
 import { dialog } from "electron"
-import { toError } from "../common/toError"
+import { toError } from "../common/errors"
 
 export function showErrorDialog(error: unknown) {
   const { stack, message } = toError(error)

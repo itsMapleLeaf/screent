@@ -1,5 +1,5 @@
 import type { JsonValue } from "type-fest"
-import { toError } from "./toError"
+import { toError } from "./errors"
 
 export function safeJsonParse(json: string): JsonValue | Error {
   try {

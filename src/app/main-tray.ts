@@ -1,7 +1,7 @@
 import { Menu, Tray } from "electron"
 import { name as appName } from "../../package.json"
 import { isDev } from "../common/constants"
-import { logErrorStack } from "../common/log-error-stack"
+import { logErrorStack } from "../common/errors"
 import { getAssetPath } from "../common/paths"
 import { hideDevtools, showDevtools } from "./devtools"
 import type { VideoRecorder, VideoRecordingState } from "./video-recorder"
