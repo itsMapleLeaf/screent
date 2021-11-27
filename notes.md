@@ -11,13 +11,14 @@
 ## recording flow
 
 - [x] start recording via hotkey
-- [ ] start recording via tray
+- [x] start recording via tray
 - [x] run slop for a recording region
 - [x] show the recording frame sized to the region
 - [x] style the recording frame with a fancy border and buttons
-- [x] record
+- [x] record video
+- [ ] record audio
 - [x] finish recording via hotkey
-- [ ] finish recording via tray
+- [x] finish recording via tray
 - [x] figure out how to not record the actual frame
 - [x] save to file
 - [x] show file in file browser

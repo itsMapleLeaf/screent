@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron"
+import { BrowserWindow } from "electron"
 import { isDev } from "../common/constants"
 import { getDistPath } from "../common/paths"
 
@@ -6,7 +6,6 @@ export class Editor {
   private constructor(private readonly win: BrowserWindow) {}
 
   static async create() {
-    await app.whenReady()
     return new Editor(await Editor.createWindow())
   }
 

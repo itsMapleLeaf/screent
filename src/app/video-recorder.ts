@@ -1,7 +1,8 @@
-import { app, BrowserWindow, shell } from "electron"
+import { BrowserWindow, shell } from "electron"
 import type { ExecaChildProcess } from "execa"
 import { createWriteStream } from "fs"
 import { mkdir } from "fs/promises"
+import { observable } from "micro-observables"
 import { unlink } from "node:fs/promises"
 import { dirname } from "path"
 import { pipeline } from "stream/promises"
@@ -18,19 +19,17 @@ import { importExeca } from "./execa"
 import { getVideoRecordingsPath } from "./paths"
 import { tryRegisterShortcut } from "./try-register-shortcut"
 
-type VideoRecorderState =
+export type VideoRecorderState =
   | { status: "ready" }
   | { status: "preparing" }
   | { status: "recording"; process: ExecaChildProcess; outputPath: string }
 
 export class VideoRecorder {
-  private state: VideoRecorderState = { status: "ready" }
+  readonly state = observable<VideoRecorderState>({ status: "ready" })
 
   private constructor(private readonly regionFrame: BrowserWindow) {}
 
   static async create() {
-    await app.whenReady()
-
     const recorder = new VideoRecorder(
       await VideoRecorder.createRecordingFrameWindow(),
     )
@@ -49,16 +48,16 @@ export class VideoRecorder {
   }
 
   isReady() {
-    return this.state.status === "ready"
+    return this.state.get().status === "ready"
   }
 
   isRecording() {
-    return this.state.status === "recording"
+    return this.state.get().status === "recording"
   }
 
   async startRecording() {
-    if (this.state.status !== "ready") return
-    this.state = { status: "preparing" }
+    if (this.state.get().status !== "ready") return
+    this.state.set({ status: "preparing" })
 
     const outputPath = VideoRecorder.getRecordingOutputPath()
 
@@ -66,9 +65,9 @@ export class VideoRecorder {
       const region = await VideoRecorder.getRegion()
       this.showWindows(region)
 
-      const [child] = await VideoRecorder.createRecordingProcess(region)
+      const [child] = await VideoRecorder.runRecordingProcess(region)
 
-      this.state = { status: "recording", process: child, outputPath }
+      this.state.set({ status: "recording", process: child, outputPath })
 
       await mkdir(dirname(outputPath), { recursive: true })
       await pipeline([child.stdout!, createWriteStream(outputPath)])
@@ -78,16 +77,17 @@ export class VideoRecorder {
       }
       throw error
     } finally {
-      this.state = { status: "ready" }
+      this.state.set({ status: "ready" })
     }
   }
 
   stopRecording() {
-    if (this.state.status !== "recording") return
-    this.state.process.stdin!.write("q")
-    shell.showItemInFolder(this.state.outputPath)
+    const state = this.state.get()
+    if (state.status !== "recording") return
+    state.process.stdin!.write("q")
+    shell.showItemInFolder(state.outputPath)
     this.hideWindows()
-    this.state = { status: "ready" }
+    this.state.set({ status: "ready" })
   }
 
   private static async createRecordingFrameWindow() {
@@ -134,7 +134,7 @@ export class VideoRecorder {
       new Date().getMinutes(),
       new Date().getSeconds(),
     ].join("-")
-    return getVideoRecordingsPath(`${appName}-${timestamp}.mp4`)
+    return getVideoRecordingsPath(`${appName}-${timestamp}.avi`)
   }
 
   private static async getRegion(): Promise<Rect> {
@@ -157,7 +157,7 @@ export class VideoRecorder {
     return rect(vec(region.x, region.y), vec(region.width, region.height))
   }
 
-  private static async createRecordingProcess(
+  private static async runRecordingProcess(
     region: Rect,
   ): Promise<[ExecaChildProcess<string>]> {
     const args = [
@@ -171,7 +171,9 @@ export class VideoRecorder {
       `-i ${process.env.DISPLAY || ":0"}.0+${region.left},${region.top}`,
 
       // output options
-      `-f mpeg`,
+      `-qscale 0`,
+      `-vcodec huffyuv`,
+      `-f avi`,
       `-`,
     ]
 
