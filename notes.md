@@ -4,10 +4,12 @@
 - slop for getting region
 - ffmpeg for recording video
 
-## general stuff
+## tray
 
 - [ ] tray icon
-- [x] tray menu debug item: show/hide devtools
+- [x] show devtools
+- [x] hide devtools
+- [ ] audio device selection
 
 ## recording flow
 
@@ -17,7 +19,7 @@
 - [x] show the recording frame sized to the region
 - [x] style the recording frame with a fancy border and buttons
 - [x] record video
-- [ ] record audio
+- [x] record audio
 - [x] finish recording via hotkey
 - [x] finish recording via tray
 - [x] figure out how to not record the actual frame

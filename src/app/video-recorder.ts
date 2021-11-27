@@ -181,29 +181,32 @@ class VideoRecorderProcess {
   private child?: ExecaChildProcess
 
   async start(region: Rect, outputPath: string) {
-    const { execaCommand } = await execaPromise
+    const { execa } = await execaPromise
 
-    this.child = execaCommand(
-      [
-        "ffmpeg",
+    const args = [
+      // video input options
+      `-f x11grab`,
+      `-hide_banner`,
+      `-framerate 30`,
+      `-video_size ${region.width}x${region.height}`,
+      `-i ${process.env.DISPLAY || ":0"}.0+${region.left},${region.top}`,
 
-        // global options
-        `-f x11grab`,
-        `-hide_banner`,
+      // audio input options (pulseaudio)
+      `-f pulse`,
+      `-i alsa_output.usb-Generic_TX-Hifi_Type_C_Audio-00.analog-stereo.monitor`,
 
-        // input options
-        `-framerate 30`,
-        `-video_size ${region.width}x${region.height}`,
-        `-i ${process.env.DISPLAY || ":0"}.0+${region.left},${region.top}`,
+      // output options
+      // I've tried using x265,
+      // but that outputs the x265 cli banner in the output file itself,
+      // which corrupts it for certain video players,
+      // so sticking with x264 for now
+      `-vcodec libx264`,
+      outputPath,
+    ]
 
-        // output options
-        // I've tried using x265,
-        // but that outputs the x265 cli banner in the output file itself,
-        // which corrupts it for certain video players,
-        // so sticking with x264 for now
-        `-vcodec libx264`,
-        outputPath,
-      ].join(" "),
+    this.child = execa(
+      "ffmpeg",
+      args.flatMap((arg) => arg.split(/\s+/)),
       { stdout: "inherit" },
     )
 
