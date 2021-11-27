@@ -9,7 +9,8 @@
 - [ ] tray icon
 - [x] show devtools
 - [x] hide devtools
-- [ ] audio device selection
+- [x] audio device selection
+- [ ] persist selected audio device
 
 ## recording flow
 
@@ -20,6 +21,7 @@
 - [x] style the recording frame with a fancy border and buttons
 - [x] record video
 - [x] record audio
+- [ ] use selected audio device
 - [x] finish recording via hotkey
 - [x] finish recording via tray
 - [x] figure out how to not record the actual frame

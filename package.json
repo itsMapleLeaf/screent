@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "execa": "^6.0.0",
+    "pulseaudio.js": "^1.2.0",
     "zod": "^3.11.6"
   },
   "devDependencies": {

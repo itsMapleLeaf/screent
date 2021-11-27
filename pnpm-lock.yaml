@@ -20,6 +20,7 @@ specifiers:
   nodemon: ^2.0.15
   npm-run-all: ^4.1.5
   prettier: ^2.5.0
+  pulseaudio.js: ^1.2.0
   react: ^17.0.2
   react-dom: ^17.0.2
   tailwindcss: ^3.0.0-alpha.2
@@ -31,6 +32,7 @@ specifiers:
 
 dependencies:
   execa: 6.0.0
+  pulseaudio.js: 1.2.0
   zod: 3.11.6
 
 devDependencies:
@@ -994,7 +996,6 @@ packages:
         optional: true
     dependencies:
       ms: 2.1.2
-    dev: true
 
   /decode-uri-component/0.2.0:
     resolution: {integrity: sha1-6zkTMzRYd1y4TNGh+uBiEGu4dUU=}
@@ -2707,7 +2708,6 @@ packages:
 
   /ms/2.1.2:
     resolution: {integrity: sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==}
-    dev: true
 
   /ms/2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -3240,6 +3240,14 @@ packages:
   /pstree.remy/1.1.8:
     resolution: {integrity: sha512-77DZwxQmxKnu3aR542U+X8FypNzbfJ+C5XQDk3uWjWxn6151aIMGthWYRXTqT1E5oJvg+ljaa2OJi+VfvCOQ8w==}
     dev: true
+
+  /pulseaudio.js/1.2.0:
+    resolution: {integrity: sha512-dOYX8pJzrH1luJbmbQHlily/nMBg4WByVcNCa0lQ4MQSeVlPke/O8GG7eZoVjbmU9NavpkR8xEehXZe9M6Bg/g==}
+    dependencies:
+      debug: 4.3.2
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
 
   /pump/3.0.0:
     resolution: {integrity: sha512-LwZy+p3SFs1Pytd/jYct4wpv49HiYCqd9Rlc5ZVdk0V+8Yzv6jR5Blk3TRmPL1ft69TxP0IMZGJ+WPFU2BFhww==}
