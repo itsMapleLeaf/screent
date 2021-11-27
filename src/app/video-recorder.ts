@@ -7,11 +7,12 @@ import { z } from "zod"
 import { name as appName } from "../../package.json"
 import { isDev } from "../common/constants"
 import { isFile } from "../common/fs"
+import { isTruthy } from "../common/is-truthy"
 import { getDistPath } from "../common/paths"
 import type { Rect } from "../common/Rect"
 import { rect } from "../common/Rect"
 import { vec } from "../common/Vec"
-import { audioDeviceSetting } from "./audio-devices"
+import type { AudioDevice, AudioDeviceSelector } from "./audio-devices"
 import { applyDevtoolsListener } from "./devtools"
 import { getVideoRecordingsPath } from "./paths"
 
@@ -25,7 +26,9 @@ export type VideoRecordingState =
 
 export type VideoRecorder = Awaited<ReturnType<typeof createVideoRecorder>>
 
-export async function createVideoRecorder() {
+export async function createVideoRecorder(
+  audioDeviceSelector: AudioDeviceSelector,
+) {
   const regionWindow = await createRegionWindow()
 
   function showRegionWindow(region: Rect) {
@@ -60,9 +63,7 @@ export async function createVideoRecorder() {
         const [child] = await createRecordingChildProcess(
           region,
           outputPath,
-          typeof audioDeviceSetting.value === "string"
-            ? audioDeviceSetting.value
-            : "default",
+          audioDeviceSelector.selectedDevice,
         )
 
         this.state = { status: "recording", child, outputPath }
@@ -168,17 +169,21 @@ async function selectRegion(): Promise<Rect> {
 
   const region = regionSchema.parse(JSON.parse(result.stdout))
 
-  return rect(vec(region.x, region.y), vec(region.width, region.height))
+  return rect(
+    vec(region.x, region.y),
+    vec(toNearest(region.width, 2), toNearest(region.height, 2)),
+  )
 }
 
 async function createRecordingChildProcess(
   region: Rect,
   outputPath: string,
-  audioDeviceId: string,
+  audioDevice: AudioDevice | undefined,
 ) {
-  const { execa } = await execaPromise
+  const args: string[] = [
+    // global options
+    // `-loglevel info`,
 
-  const args = [
     // video input
     `-f x11grab`,
     `-framerate 30`,
@@ -187,20 +192,23 @@ async function createRecordingChildProcess(
     `-i ${process.env.DISPLAY || ":0"}.0+${region.left},${region.top}`,
 
     // audio input
-    `-f pulse`,
-    `-i ${audioDeviceId}`,
+    audioDevice && [`-f pulse`, `-i ${audioDevice.id}`],
 
-    // output options
+    // video output options
     `-codec:v libx264`,
-    `-pix_fmt yuv420p`, // allows playback in VLC
+    `-pix_fmt yuv420p`, // allows playback in VLC and other video players
     `-preset slow`,
+    `-x264-params rc_lookahead=0`,
 
-    `-codec:a libopus`,
-    `-ac 2`,
+    // audio output options
+    audioDevice && [`-codec:a aac`, `-framerate 30`],
 
     outputPath,
   ]
+    .flat()
+    .filter(isTruthy)
 
+  const { execa } = await execaPromise
   const child = execa(
     "ffmpeg",
     args.flatMap((arg) => arg.split(/\s+/)),

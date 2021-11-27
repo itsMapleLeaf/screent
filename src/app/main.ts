@@ -1,7 +1,7 @@
 import { app } from "electron"
 import { configure } from "mobx"
 import { logErrorStack } from "../common/errors"
-import { createAudioDeviceListener } from "./audio-devices"
+import { createAudioDeviceSelector } from "./audio-devices"
 import { showErrorDialog } from "./error-dialog"
 import { createMainTray } from "./main-tray"
 import { tryRegisterShortcut } from "./shortcut"
@@ -14,8 +14,8 @@ configure({
 async function main() {
   await app.whenReady()
 
-  const audioDeviceSelector = await createAudioDeviceListener()
-  const recorder = await createVideoRecorder()
+  const audioDeviceSelector = await createAudioDeviceSelector()
+  const recorder = await createVideoRecorder(audioDeviceSelector)
   createMainTray(recorder, audioDeviceSelector)
 
   tryRegisterShortcut("Meta+Alt+F12", () => {

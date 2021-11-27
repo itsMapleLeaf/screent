@@ -4,8 +4,8 @@ import { name as appName } from "../../package.json"
 import { isDev } from "../common/constants"
 import { logErrorStack } from "../common/errors"
 import { getAssetPath } from "../common/paths"
+import { joinContentfulStrings } from "../common/string"
 import type { AudioDeviceSelector } from "./audio-devices"
-import { audioDeviceSetting } from "./audio-devices"
 import { hideDevtools, showDevtools } from "./devtools"
 import type { VideoRecorder } from "./video-recorder"
 
@@ -33,21 +33,30 @@ export function createMainTray(
           },
         },
         {
+          label: "Select Audio Device",
+          visible:
+            recorder.state.status === "ready" &&
+            audioDeviceSelector.devices.length > 0,
+          submenu: audioDeviceSelector.devices.map((device) => ({
+            type: "checkbox",
+            label: joinContentfulStrings(
+              [device.name, device.muted && "(muted)"],
+              " ",
+            ),
+            checked: device.id === audioDeviceSelector.selectedDevice?.id,
+            enabled: device.alsaString != null, // can't play it if there's no alsa string
+            click: () => {
+              if (device.id) {
+                audioDeviceSelector.select(device.id)
+              }
+            },
+          })),
+        },
+
+        {
           label: "Stop Recording",
           visible: recorder.state.status === "recording",
           click: recorder.stopRecording,
-        },
-        {
-          label: "Select Audio Device",
-          submenu: audioDeviceSelector.devices.map((device) => ({
-            label: device.name,
-            type: "radio",
-            checked: device.id === audioDeviceSetting.value,
-            enabled: device.id !== undefined,
-            click: () => {
-              if (device.id) audioDeviceSetting.set(device.id)
-            },
-          })),
         },
 
         // dev options

@@ -44,7 +44,10 @@ async function readSettings(): Promise<JsonObject> {
   }
 }
 
-export function createSetting(key: string, defaultValue: JsonValue) {
+export function createSetting(
+  key: string,
+  defaultValue: JsonValue | undefined,
+) {
   const setting = makeAutoObservable({
     value: defaultValue,
 
