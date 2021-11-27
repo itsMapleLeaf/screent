@@ -1,22 +1,28 @@
-import { observable } from "micro-observables"
+import { makeObservable, observable } from "mobx"
 import { Rect } from "../../common/Rect"
 import { vec, Vec } from "../../common/Vec"
 
 export class RegionSelector {
-  readonly region = observable<Rect | undefined>(undefined)
+  region: Rect | undefined
   readonly area: Rect
 
   constructor(areaSize: Vec) {
     this.area = new Rect(vec(), areaSize)
+
+    makeObservable(this, {
+      region: observable.ref,
+    })
   }
 
   start(position: Vec): RegionSelectorAction {
-    const region = this.region.get()
-    if (region?.containsPoint(position)) {
-      return new RegionSelectorMoveAction(this, position.minus(region.position))
+    if (this.region?.containsPoint(position)) {
+      return new RegionSelectorMoveAction(
+        this,
+        position.minus(this.region.position),
+      )
     }
 
-    this.region.set(new Rect(position, vec()))
+    this.region = new Rect(position, vec())
     return new RegionSelectorCreateAction(this, position)
   }
 }
@@ -37,11 +43,9 @@ export class RegionSelectorCreateAction implements RegionSelectorAction {
       this.selector.area.bottomRight,
     )
 
-    this.selector.region.update((region) =>
-      region
-        ?.moveTo(Vec.lesser(this.initialPosition, position))
-        .resizeTo(this.initialPosition.minus(position).abs()),
-    )
+    this.selector.region = this.selector.region
+      ?.moveTo(Vec.lesser(this.initialPosition, position))
+      .resizeTo(this.initialPosition.minus(position).abs())
   }
 }
 
@@ -52,12 +56,13 @@ export class RegionSelectorMoveAction implements RegionSelectorAction {
   ) {}
 
   update(position: Vec) {
-    this.selector.region.update((region) =>
-      region?.moveTo(
-        position
-          .minus(this.dragOffset)
-          .clamp(vec(), this.selector.area.bottomRight.minus(region.size)),
-      ),
+    this.selector.region = this.selector.region?.moveTo(
+      position
+        .minus(this.dragOffset)
+        .clamp(
+          vec(),
+          this.selector.area.bottomRight.minus(this.selector.region.size),
+        ),
     )
   }
 }

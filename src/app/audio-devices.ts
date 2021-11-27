@@ -1,4 +1,4 @@
-import { observable } from "micro-observables"
+import { makeAutoObservable, observable } from "mobx"
 import { PulseAudio } from "pulseaudio.js"
 import { logErrorStack } from "../common/errors"
 
@@ -15,36 +15,44 @@ export async function createAudioDeviceSelector() {
   const pa = new PulseAudio()
   await pa.connect()
 
-  const devices = observable<AudioDevice[]>([])
-  const selectedId = observable<AudioDevice["id"]>(undefined)
+  const instance = makeAutoObservable(
+    {
+      devices: [] as AudioDevice[],
+      selectedDeviceId: undefined as string | undefined,
 
-  await updateDevices()
+      async updateDevices() {
+        const sources = await pa.getAllSources()
 
-  const handleSourceChange = () => updateDevices().catch(logErrorStack)
+        this.devices = sources.map((source) => ({
+          // we'll consider a source disabled if id is undefined
+          id:
+            // state 2 means suspended
+            typeof source.name === "string" && source.state !== 2
+              ? source.name
+              : undefined,
+          name: String(source.description || "Unknown Device"),
+        }))
+
+        if (!this.selectedDeviceId) {
+          this.selectedDeviceId = this.devices.find((device) => device.id)?.id
+        }
+      },
+
+      setDevice(deviceId: AudioDevice["id"]) {
+        this.selectedDeviceId = deviceId
+      },
+    },
+    {
+      devices: observable.ref,
+    },
+  )
+
+  const handleSourceChange = () => instance.updateDevices().catch(logErrorStack)
   pa.on("event.source.new", handleSourceChange)
     .on("event.source.remove", handleSourceChange)
     .on("event.source.change", handleSourceChange)
 
-  async function updateDevices() {
-    const sources = await pa.getAllSources()
+  await instance.updateDevices()
 
-    devices.set(
-      sources
-        .filter((source) => source.state !== 2) // state is not suspended
-        .map((source) => ({
-          id: typeof source.name === "string" ? source.name : undefined,
-          name: String(source.description || "Unknown Device"),
-        })),
-    )
-  }
-
-  function setDevice(id: AudioDevice["id"]) {
-    selectedId.set(id)
-  }
-
-  return {
-    devices: devices.readOnly(),
-    selectedId: selectedId.readOnly(),
-    setDevice,
-  }
+  return instance
 }

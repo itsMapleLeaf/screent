@@ -1,6 +1,6 @@
 import { BrowserWindow, shell } from "electron"
 import type { ExecaChildProcess } from "execa"
-import { observable } from "micro-observables"
+import { makeAutoObservable } from "mobx"
 import { mkdir, unlink } from "node:fs/promises"
 import { dirname } from "node:path"
 import { z } from "zod"
@@ -28,61 +28,7 @@ export type VideoRecorder = Awaited<ReturnType<typeof createVideoRecorder>>
 export async function createVideoRecorder(
   audioDeviceSelector: AudioDeviceSelector,
 ) {
-  const state = observable<VideoRecordingState>({ status: "ready" })
   const regionWindow = await createRegionWindow()
-
-  async function startRecording() {
-    if (state.get().status !== "ready") {
-      return
-    }
-
-    state.set({ status: "preparing" })
-
-    let outputPath: string | undefined
-
-    try {
-      outputPath = await ensureRecordingOutputPath()
-      const region = await selectRegion()
-
-      const [child] = await createRecordingChildProcess(
-        region,
-        outputPath,
-        audioDeviceSelector.selectedId.get(),
-      )
-
-      state.set({ status: "recording", child, outputPath })
-      showRegionWindow(region)
-
-      await child
-
-      shell.showItemInFolder(outputPath)
-    } catch (error) {
-      if (outputPath && (await isFile(outputPath))) {
-        await unlink(outputPath)
-      }
-      throw error
-    } finally {
-      state.set({ status: "ready" })
-      hideRegionWindow()
-    }
-  }
-
-  function stopRecording() {
-    const current = state.get()
-    if (current.status === "recording") {
-      current.child.stdin!.write("q")
-    }
-
-    hideRegionWindow()
-  }
-
-  async function toggleRecording() {
-    if (state.get().status === "ready") {
-      await startRecording()
-    } else {
-      stopRecording()
-    }
-  }
 
   function showRegionWindow(region: Rect) {
     regionWindow.setBounds({
@@ -98,12 +44,59 @@ export async function createVideoRecorder(
     regionWindow.hide()
   }
 
-  return {
-    state: state.readOnly(),
-    startRecording,
-    stopRecording,
-    toggleRecording,
-  }
+  return makeAutoObservable({
+    state: { status: "ready" } as VideoRecordingState,
+    async startRecording() {
+      if (this.state.status !== "ready") {
+        return
+      }
+
+      this.state = { status: "preparing" }
+
+      let outputPath: string | undefined
+
+      try {
+        outputPath = await ensureRecordingOutputPath()
+        const region = await selectRegion()
+
+        const [child] = await createRecordingChildProcess(
+          region,
+          outputPath,
+          audioDeviceSelector.selectedDeviceId,
+        )
+
+        this.state = { status: "recording", child, outputPath }
+        showRegionWindow(region)
+
+        await child
+
+        shell.showItemInFolder(outputPath)
+      } catch (error) {
+        if (outputPath && (await isFile(outputPath))) {
+          await unlink(outputPath)
+        }
+        throw error
+      } finally {
+        this.state = { status: "ready" }
+        hideRegionWindow()
+      }
+    },
+
+    stopRecording() {
+      if (this.state.status === "recording") {
+        this.state.child.stdin!.write("q")
+      }
+      hideRegionWindow()
+    },
+
+    async toggleRecording() {
+      if (this.state.status === "ready") {
+        await this.startRecording()
+      } else {
+        this.stopRecording()
+      }
+    },
+  })
 }
 
 async function createRegionWindow() {
