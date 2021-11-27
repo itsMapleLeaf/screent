@@ -11,6 +11,7 @@ import { getDistPath } from "../common/paths"
 import type { Rect } from "../common/Rect"
 import { rect } from "../common/Rect"
 import { vec } from "../common/Vec"
+import type { AudioDeviceSelector } from "./audio-devices"
 import { applyDevtoolsListener } from "./devtools"
 import { getVideoRecordingsPath } from "./paths"
 
@@ -24,7 +25,9 @@ export type VideoRecordingState =
 
 export type VideoRecorder = Awaited<ReturnType<typeof createVideoRecorder>>
 
-export async function createVideoRecorder() {
+export async function createVideoRecorder(
+  audioDeviceSelector: AudioDeviceSelector,
+) {
   const state = observable<VideoRecordingState>({ status: "ready" })
   const regionWindow = await createRegionWindow()
 
@@ -40,7 +43,12 @@ export async function createVideoRecorder() {
     try {
       outputPath = await ensureRecordingOutputPath()
       const region = await selectRegion()
-      const [child] = await createRecordingChildProcess(region, outputPath)
+
+      const [child] = await createRecordingChildProcess(
+        region,
+        outputPath,
+        audioDeviceSelector.selectedId.get(),
+      )
 
       state.set({ status: "recording", child, outputPath })
       showRegionWindow(region)
@@ -170,7 +178,11 @@ async function selectRegion(): Promise<Rect> {
   return rect(vec(region.x, region.y), vec(region.width, region.height))
 }
 
-async function createRecordingChildProcess(region: Rect, outputPath: string) {
+async function createRecordingChildProcess(
+  region: Rect,
+  outputPath: string,
+  audioDeviceId: string | undefined,
+) {
   const { execa } = await execaPromise
 
   const args = [
@@ -183,7 +195,7 @@ async function createRecordingChildProcess(region: Rect, outputPath: string) {
 
     // audio input options (pulseaudio)
     `-f pulse`,
-    `-i alsa_output.usb-Generic_TX-Hifi_Type_C_Audio-00.analog-stereo.monitor`,
+    `-i ${audioDeviceId || "default"}`,
 
     // output options
     // I've tried using x265,

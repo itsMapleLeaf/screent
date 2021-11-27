@@ -21,7 +21,7 @@
 - [x] style the recording frame with a fancy border and buttons
 - [x] record video
 - [x] record audio
-- [ ] use selected audio device
+- [x] use selected audio device
 - [x] finish recording via hotkey
 - [x] finish recording via tray
 - [x] figure out how to not record the actual frame

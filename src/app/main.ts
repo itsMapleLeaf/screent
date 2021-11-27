@@ -9,8 +9,8 @@ import { createVideoRecorder } from "./video-recorder"
 async function main() {
   await app.whenReady()
 
-  const recorder = await createVideoRecorder()
   const audioDeviceSelector = await createAudioDeviceSelector()
+  const recorder = await createVideoRecorder(audioDeviceSelector)
   createMainTray(recorder, audioDeviceSelector)
 
   tryRegisterShortcut("Meta+Alt+F12", () => {
