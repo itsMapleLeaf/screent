@@ -5,6 +5,7 @@ import { isDev } from "../common/constants"
 import { logErrorStack } from "../common/errors"
 import { getAssetPath } from "../common/paths"
 import type { AudioDeviceSelector } from "./audio-devices"
+import { audioDeviceSetting } from "./audio-devices"
 import { hideDevtools, showDevtools } from "./devtools"
 import type { VideoRecorder } from "./video-recorder"
 
@@ -41,10 +42,10 @@ export function createMainTray(
           submenu: audioDeviceSelector.devices.map((device) => ({
             label: device.name,
             type: "radio",
-            checked: device.id === audioDeviceSelector.selectedDeviceId,
+            checked: device.id === audioDeviceSetting.value,
             enabled: device.id !== undefined,
             click: () => {
-              audioDeviceSelector.setDevice(device.id)
+              if (device.id) audioDeviceSetting.set(device.id)
             },
           })),
         },

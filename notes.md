@@ -4,15 +4,19 @@
 - slop for getting region
 - ffmpeg for recording video
 
+## app
+
+- [ ] package for distribution
+
 ## tray
 
-- [ ] tray icon
+- [ ] tray icon that isn't an anime girl eating a burger
 - [x] show devtools
 - [x] hide devtools
 - [x] audio device selection
-- [ ] persist selected audio device
+- [x] persist selected audio device
 
-## recording flow
+## recording mvp
 
 - [x] start recording via hotkey
 - [x] start recording via tray
@@ -28,25 +32,27 @@
 - [x] save to file
 - [x] show file in file browser
 
-## screenshot flow
+## recording
+
+- [ ] move recording region while recording?
+- [ ] config: video path
+- [ ] config: FPS
+- [ ] config: quality
+
+## screenshot mvp
 
 - [ ] press screenshot hotkey
 - [ ] run slop for a screenshot region
 - [ ] take screenshot
 - [ ] open in editor
+- [ ] editor: crop to a region
+- [ ] editor: crop to a specific display
+- [ ] editor: crop to a window
+- [ ] editor: other editing things maybe
+- [ ] editor: save to file (closes window)
+- [ ] editor: copy to clipboard (closes window)
+- [ ] editor: upload and copy url (closes window)
 
-### editor window features
+## screenshot
 
-- [ ] crop to a region
-- [ ] crop to a specific display
-- [ ] crop to a window
-- [ ] other editing things maybe
-- [ ] save to file (closes window)
-- [ ] copy to clipboard (closes window)
-- [ ] upload and copy url (closes window)
-
-## extra
-
-- [ ] configurable video path
 - [ ] configurable screenshot path
-- [ ] move recording region while recording?

@@ -12,6 +12,7 @@ import type { Rect } from "../common/Rect"
 import { rect } from "../common/Rect"
 import { vec } from "../common/Vec"
 import type { AudioDeviceSelector } from "./audio-devices"
+import { audioDeviceSetting } from "./audio-devices"
 import { applyDevtoolsListener } from "./devtools"
 import { getVideoRecordingsPath } from "./paths"
 
@@ -62,7 +63,9 @@ export async function createVideoRecorder(
         const [child] = await createRecordingChildProcess(
           region,
           outputPath,
-          audioDeviceSelector.selectedDeviceId,
+          typeof audioDeviceSetting.value === "string"
+            ? audioDeviceSetting.value
+            : "default",
         )
 
         this.state = { status: "recording", child, outputPath }
@@ -174,7 +177,7 @@ async function selectRegion(): Promise<Rect> {
 async function createRecordingChildProcess(
   region: Rect,
   outputPath: string,
-  audioDeviceId: string | undefined,
+  audioDeviceId: string,
 ) {
   const { execa } = await execaPromise
 
@@ -188,7 +191,7 @@ async function createRecordingChildProcess(
 
     // audio input options (pulseaudio)
     `-f pulse`,
-    `-i ${audioDeviceId || "default"}`,
+    `-i ${audioDeviceId}`,
 
     // output options
     // I've tried using x265,

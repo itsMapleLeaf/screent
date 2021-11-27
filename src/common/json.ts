@@ -1,10 +1,5 @@
-import type { JsonValue } from "type-fest"
-import { toError } from "./errors"
+import type { JsonObject, JsonValue } from "type-fest"
 
-export function safeJsonParse(json: string): JsonValue | Error {
-  try {
-    return JSON.parse(json)
-  } catch (error) {
-    return toError(error)
-  }
+export function isJsonObject(value: JsonValue): value is JsonObject {
+  return typeof value === "object" && value != null && !Array.isArray(value)
 }
