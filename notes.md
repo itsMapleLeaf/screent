@@ -38,6 +38,7 @@
 - [ ] config: video path
 - [ ] config: FPS
 - [ ] config: quality
+- [ ] use alsa to record audio - pulseaudio has audio delay/sync issues
 
 ## screenshot mvp
 

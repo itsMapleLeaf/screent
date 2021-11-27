@@ -11,7 +11,6 @@ import { getDistPath } from "../common/paths"
 import type { Rect } from "../common/Rect"
 import { rect } from "../common/Rect"
 import { vec } from "../common/Vec"
-import type { AudioDeviceSelector } from "./audio-devices"
 import { audioDeviceSetting } from "./audio-devices"
 import { applyDevtoolsListener } from "./devtools"
 import { getVideoRecordingsPath } from "./paths"
@@ -26,9 +25,7 @@ export type VideoRecordingState =
 
 export type VideoRecorder = Awaited<ReturnType<typeof createVideoRecorder>>
 
-export async function createVideoRecorder(
-  audioDeviceSelector: AudioDeviceSelector,
-) {
+export async function createVideoRecorder() {
   const regionWindow = await createRegionWindow()
 
   function showRegionWindow(region: Rect) {
@@ -171,7 +168,11 @@ async function selectRegion(): Promise<Rect> {
 
   const region = regionSchema.parse(JSON.parse(result.stdout))
 
-  return rect(vec(region.x, region.y), vec(region.width, region.height))
+  return rect(
+    vec(region.x, region.y),
+    // rounding to the nearest 16 can keep the ffmpeg encoder from crashing
+    vec(toNearest(region.width, 16), toNearest(region.height, 16)),
+  )
 }
 
 async function createRecordingChildProcess(
@@ -182,32 +183,38 @@ async function createRecordingChildProcess(
   const { execa } = await execaPromise
 
   const args = [
-    // video input options
+    // video input
     `-f x11grab`,
-    `-hide_banner`,
     `-framerate 30`,
     `-video_size ${region.width}x${region.height}`,
+    `-thread_queue_size 128`, // fixes a "thread queue is blocking" warning
     `-i ${process.env.DISPLAY || ":0"}.0+${region.left},${region.top}`,
 
-    // audio input options (pulseaudio)
+    // audio input
     `-f pulse`,
     `-i ${audioDeviceId}`,
 
     // output options
-    // I've tried using x265,
-    // but that outputs the x265 cli banner in the output file itself,
-    // which corrupts it for certain video players,
-    // so sticking with x264 for now
-    `-vcodec libx264`,
+    `-codec:v libx264`,
+    `-pix_fmt yuv420p`, // allows playback in VLC
+    `-preset slow`,
+
+    `-codec:a libopus`,
+    `-ac 2`,
+
     outputPath,
   ]
 
   const child = execa(
     "ffmpeg",
     args.flatMap((arg) => arg.split(/\s+/)),
-    { stdout: "inherit" },
+    { stdout: "inherit", stderr: "inherit" }, // ffmpeg logs info to stderr for some reason
   )
 
   // ensure the child doesn't get unwrapped as a promise
   return [child] as const
+}
+
+function toNearest(value: number, step: number) {
+  return Math.round(value / step) * step
 }

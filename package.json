@@ -1,21 +1,29 @@
 {
   "name": "screent",
   "version": "0.0.0",
+  "author": {
+    "name": "itsMapleLeaf",
+    "email": "mapleleafdev0@gmail.com"
+  },
   "description": "a fun and friendly screenshot and screen recording app",
   "main": "dist/main.js",
   "scripts": {
     "dev": "pnpm run-parallel -- --race dev-*",
-    "dev-main": "pnpm build-main -- --watch",
+    "dev-main": "cross-env NODE_ENV=development pnpm build-main -- --watch",
     "dev-renderer": "vite",
     "dev-nodemon": "nodemon --watch dist --exec electron .",
     "build": "pnpm run-parallel -- build-*",
     "build-main": "tsup-node",
     "build-renderer": "vite build",
-    "start": "NODE_ENV=production electron .",
+    "start": "electron .",
     "lint": "eslint --ext js,ts,tsx .",
     "lint-fix": "npm run lint -- --fix",
     "format": "prettier --write .",
-    "run-parallel": "npm-run-all --parallel --print-label"
+    "run-parallel": "npm-run-all --parallel --print-label",
+    "pack": "pnpm build && electron-builder --dir",
+    "release": "pnpm build && electron-builder --publish never",
+    "release-pacman": "pnpm release -- --linux pacman",
+    "install-pacman": "sudo pacman -U \"./release/$npm_package_name-$npm_package_version.pacman\""
   },
   "dependencies": {
     "execa": "^6.0.0",
@@ -31,7 +39,9 @@
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
     "clsx": "^1.1.1",
+    "cross-env": "^7.0.3",
     "electron": "^16.0.2",
+    "electron-builder": "^22.14.5",
     "eslint": "^8.3.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-jsx-a11y": "^6.5.1",
@@ -45,6 +55,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "tailwindcss": "^3.0.0-alpha.2",
+    "toml": "^3.0.0",
     "tsup": "^5.10.0",
     "type-fest": "^2.6.0",
     "typescript": "^4.5.2",

@@ -15,7 +15,7 @@ async function main() {
   await app.whenReady()
 
   const audioDeviceSelector = await createAudioDeviceListener()
-  const recorder = await createVideoRecorder(audioDeviceSelector)
+  const recorder = await createVideoRecorder()
   createMainTray(recorder, audioDeviceSelector)
 
   tryRegisterShortcut("Meta+Alt+F12", () => {

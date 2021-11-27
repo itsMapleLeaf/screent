@@ -3,7 +3,7 @@ import { dirname, join } from "node:path"
 
 // find first parent directory with a package.json file, or the cwd
 const projectRoot = (() => {
-  let dir = process.cwd()
+  let dir = __dirname
   while (dir !== "/") {
     if (existsSync(join(dir, "package.json"))) {
       return dir
