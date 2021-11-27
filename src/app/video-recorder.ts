@@ -168,11 +168,7 @@ async function selectRegion(): Promise<Rect> {
 
   const region = regionSchema.parse(JSON.parse(result.stdout))
 
-  return rect(
-    vec(region.x, region.y),
-    // rounding to the nearest 16 can keep the ffmpeg encoder from crashing
-    vec(toNearest(region.width, 16), toNearest(region.height, 16)),
-  )
+  return rect(vec(region.x, region.y), vec(region.width, region.height))
 }
 
 async function createRecordingChildProcess(
