@@ -30,7 +30,7 @@ export class MainTray {
   private updateMenu(state: VideoRecorderState) {
     this.tray.setContextMenu(
       Menu.buildFromTemplate([
-        { label: appName, enabled: false },
+        { label: `${appName} - ${state.status}`, enabled: false },
 
         { type: "separator" },
 
