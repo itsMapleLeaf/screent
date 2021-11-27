@@ -7,6 +7,7 @@
 ## general stuff
 
 - [ ] tray icon
+- [ ] tray menu debug item: toggle devtools
 
 ## recording flow
 
