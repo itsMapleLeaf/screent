@@ -1,6 +1,7 @@
 import { BrowserWindow } from "electron"
 import { isDev } from "../common/constants"
 import { getDistPath } from "../common/paths"
+import { applyDevtoolsListener } from "./devtools"
 
 export class Editor {
   private constructor(private readonly win: BrowserWindow) {}
@@ -25,10 +26,12 @@ export class Editor {
     })
 
     if (isDev) {
-      await win.loadURL("http://localhost:3000/src/editor/")
+      await win.loadURL("http://localhost:3000/editor/")
     } else {
       await win.loadFile(getDistPath("renderer/editor/index.html"))
     }
+
+    applyDevtoolsListener(win)
 
     return win
   }

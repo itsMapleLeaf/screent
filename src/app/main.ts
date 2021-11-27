@@ -6,9 +6,9 @@ import { VideoRecorder } from "./video-recorder"
 
 async function main() {
   await app.whenReady()
-  const editor = await Editor.create()
+  await Editor.create()
   const recorder = await VideoRecorder.create()
-  MainTray.create(editor, recorder)
+  MainTray.create(recorder)
 }
 
 main().catch(showErrorDialog)

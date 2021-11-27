@@ -12,6 +12,7 @@ import { getDistPath } from "../common/paths"
 import type { Rect } from "../common/Rect"
 import { rect } from "../common/Rect"
 import { vec } from "../common/Vec"
+import { applyDevtoolsListener } from "./devtools"
 import { getVideoRecordingsPath } from "./paths"
 import { tryRegisterShortcut } from "./try-register-shortcut"
 
@@ -29,9 +30,10 @@ export class VideoRecorder {
   private constructor(private readonly regionFrame: BrowserWindow) {}
 
   static async create() {
-    const recorder = new VideoRecorder(
-      await VideoRecorder.createRecordingFrameWindow(),
-    )
+    const frameWindow = await VideoRecorder.createRecordingFrameWindow()
+    applyDevtoolsListener(frameWindow)
+
+    const recorder = new VideoRecorder(frameWindow)
 
     tryRegisterShortcut("Meta+Alt+F12", () => {
       if (recorder.isReady()) {
@@ -116,7 +118,6 @@ export class VideoRecorder {
 
     if (isDev) {
       await win.loadURL("http://localhost:3000/video-recording-frame.html")
-      win.webContents.openDevTools()
     } else {
       await win.loadFile(getDistPath("renderer/video-recording-frame.html"))
     }
