@@ -1,14 +1,19 @@
 import { app } from "electron"
-import { Editor } from "./editor"
-import { MainTray } from "./main-tray"
-import { showErrorDialog } from "./showErrorDialog"
-import { VideoRecorder } from "./video-recorder"
+import { logErrorStack } from "../common/log-error-stack"
+import { showErrorDialog } from "./error-dialog"
+import { createMainTray } from "./main-tray"
+import { tryRegisterShortcut } from "./shortcut"
+import { createVideoRecorder } from "./video-recorder"
 
 async function main() {
   await app.whenReady()
-  await Editor.create()
-  const recorder = await VideoRecorder.create()
-  MainTray.create(recorder)
+
+  const recorder = await createVideoRecorder()
+  createMainTray(recorder)
+
+  tryRegisterShortcut("Meta+Alt+F12", () => {
+    recorder.toggleRecording().catch(logErrorStack)
+  })
 }
 
 main().catch(showErrorDialog)
