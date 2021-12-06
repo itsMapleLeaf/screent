@@ -30,8 +30,7 @@
 - [x] finish recording via hotkey
 - [x] finish recording via tray
 - [x] figure out how to not record the actual frame
-- [x] save to fileAudioDevice
-- [ ] move recording region while recording?
+- [x] save to file
 - [ ] config: video path
 - [ ] config: FPS
 - [ ] config: quality
@@ -53,6 +52,11 @@
 ## screenshot
 
 - [ ] configurable screenshot path
+
+## bugs
+
+- [x] recording initially freezes for a few seconds
+- [ ] recording audio cuts off early
 
 ## example pulseaudio devices
 

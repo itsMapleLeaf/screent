@@ -182,26 +182,30 @@ async function createRecordingChildProcess(
 ) {
   const args: string[] = [
     // global options
-    // `-loglevel info`,
-
-    // video input
-    `-f x11grab`,
-    `-framerate 30`,
-    `-video_size ${region.width}x${region.height}`,
-    `-thread_queue_size 128`, // fixes a "thread queue is blocking" warning
-    `-i ${process.env.DISPLAY || ":0"}.0+${region.left},${region.top}`,
+    // `-loglevel quiet`,
+    `-use_wallclock_as_timestamps 1`,
 
     // audio input
     audioDevice && [`-f pulse`, `-i ${audioDevice.id}`],
 
+    // video input
+    `-f x11grab`,
+    `-framerate 25`,
+    `-video_size ${region.width}x${region.height}`,
+    `-thread_queue_size 128`, // fixes a "thread queue is blocking" warning
+    `-i ${process.env.DISPLAY || ":0"}.0+${region.left},${region.top}`,
+
     // video output options
     `-codec:v libx264`,
+    `-preset fast`,
     `-pix_fmt yuv420p`, // allows playback in VLC and other video players
-    `-preset slow`,
-    `-x264-params rc_lookahead=0`,
 
     // audio output options
-    audioDevice && [`-codec:a aac`, `-framerate 30`],
+    audioDevice && [
+      `-codec:a libvorbis`,
+      `-ac ${audioDevice.channelCount ?? "2"}`,
+      `-ar ${audioDevice.sampleRate ?? "48000"}`,
+    ],
 
     outputPath,
   ]
