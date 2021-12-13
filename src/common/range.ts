@@ -6,8 +6,12 @@ export function range(start: number, end: number, step: number = 1): number[] {
     throw new Error("Step cannot be 0")
   }
   const result: number[] = []
-  for (let i = start; step > 0 ? i <= end : i >= end; i += step) {
-    result.push(i)
+  for (
+    let value = start;
+    step > 0 ? value <= end : value >= end;
+    value += step
+  ) {
+    result.push(value)
   }
   return result
 }

@@ -85,14 +85,15 @@
       "./node_modules/@itsmapleleaf/configs/eslint"
     ],
     "rules": {
-      "no-console": [
+      "unicorn/filename-case": "off",
+      "unicorn/prevent-abbreviations": [
         "warn",
         {
-          "allow": [
-            "warn",
-            "error",
-            "info"
-          ]
+          "replacements": {
+            "props": false,
+            "args": false,
+            "ref": false
+          }
         }
       ]
     }

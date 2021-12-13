@@ -5,7 +5,7 @@ import { mkdir, unlink } from "node:fs/promises"
 import { dirname } from "node:path"
 import { z } from "zod"
 import { name as appName } from "../../package.json"
-import { isDev } from "../common/constants"
+import { isDevelopment } from "../common/constants"
 import { isFile } from "../common/fs"
 import { isTruthy } from "../common/is-truthy"
 import { getDistPath } from "../common/paths"
@@ -19,7 +19,7 @@ import { getVideoRecordingsPath } from "./paths"
 // execa is an ES module, and can't be required normally
 const execaPromise = import("execa")
 
-export type VideoRecordingState =
+type VideoRecordingState =
   | { status: "ready" }
   | { status: "preparing" }
   | { status: "recording"; child: ExecaChildProcess; outputPath: string }
@@ -127,11 +127,9 @@ async function createRegionWindow() {
 
   applyDevtoolsListener(win)
 
-  if (isDev) {
-    await win.loadURL("http://localhost:3000/video-recording-frame.html")
-  } else {
-    await win.loadFile(getDistPath("renderer/video-recording-frame.html"))
-  }
+  await (isDevelopment
+    ? win.loadURL("http://localhost:3000/video-recording-frame.html")
+    : win.loadFile(getDistPath("renderer/video-recording-frame.html")))
 
   return win
 }
@@ -180,7 +178,7 @@ async function createRecordingChildProcess(
   outputPath: string,
   audioDevice: AudioDevice | undefined,
 ) {
-  const args: string[] = [
+  const flags: string[] = [
     // global options
     // `-loglevel quiet`,
     `-use_wallclock_as_timestamps 1`,
@@ -215,7 +213,7 @@ async function createRecordingChildProcess(
   const { execa } = await execaPromise
   const child = execa(
     "ffmpeg",
-    args.flatMap((arg) => arg.split(/\s+/)),
+    flags.flatMap((flag) => flag.split(/\s+/)),
     { stdout: "inherit", stderr: "inherit" }, // ffmpeg logs info to stderr for some reason
   )
 

@@ -1,7 +1,7 @@
 import { Menu, Tray } from "electron"
 import { autorun } from "mobx"
 import { name as appName } from "../../package.json"
-import { isDev } from "../common/constants"
+import { isDevelopment } from "../common/constants"
 import { logErrorStack } from "../common/errors"
 import { getAssetPath } from "../common/paths"
 import { joinContentfulStrings } from "../common/string"
@@ -44,7 +44,7 @@ export function createMainTray(
               " ",
             ),
             checked: device.id === audioDeviceSelector.selectedDevice?.id,
-            enabled: device.alsaString != null, // can't play it if there's no alsa string
+            enabled: device.alsaString != undefined, // can't play it if there's no alsa string
             click: () => {
               if (device.id) {
                 audioDeviceSelector.select(device.id)
@@ -60,9 +60,9 @@ export function createMainTray(
         },
 
         // dev options
-        { visible: isDev, type: "separator" },
-        { visible: isDev, label: "Show Devtools", click: showDevtools },
-        { visible: isDev, label: "Hide Devtools", click: hideDevtools },
+        { visible: isDevelopment, type: "separator" },
+        { visible: isDevelopment, label: "Show Devtools", click: showDevtools },
+        { visible: isDevelopment, label: "Hide Devtools", click: hideDevtools },
 
         { type: "separator" },
 

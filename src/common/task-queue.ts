@@ -4,7 +4,7 @@ export type TaskConfig<Value> = {
   run: () => Promise<Value> | Value
 }
 
-export type Task<Value> = TaskConfig<Value> & {
+type Task<Value> = TaskConfig<Value> & {
   resolve: (value: Value) => void
 }
 

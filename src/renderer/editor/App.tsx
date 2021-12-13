@@ -76,7 +76,7 @@ const RegionElement = observer(function RegionElement({
   regionSelector: RegionSelector
 }) {
   if (!regionSelector.region) {
-    return null
+    return <></>
   }
 
   return (

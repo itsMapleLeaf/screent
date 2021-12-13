@@ -1,5 +1,5 @@
 import { BrowserWindow } from "electron"
-import { isDev } from "../common/constants"
+import { isDevelopment } from "../common/constants"
 import { getDistPath } from "../common/paths"
 import { applyDevtoolsListener } from "./devtools"
 
@@ -25,11 +25,9 @@ export class Editor {
       win.hide()
     })
 
-    if (isDev) {
-      await win.loadURL("http://localhost:3000/editor/")
-    } else {
-      await win.loadFile(getDistPath("renderer/editor/index.html"))
-    }
+    await (isDevelopment
+      ? win.loadURL("http://localhost:3000/editor/")
+      : win.loadFile(getDistPath("renderer/editor/index.html")))
 
     applyDevtoolsListener(win)
 

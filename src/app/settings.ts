@@ -58,7 +58,7 @@ export function createSetting(
   })
 
   queue.add(createGetTask(key)).then((value) => {
-    if (value != null) setting.value = value
+    if (value != undefined) setting.value = value
   }, logErrorStack)
 
   return setting
