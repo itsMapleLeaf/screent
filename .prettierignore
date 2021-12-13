@@ -1,5 +1,6 @@
+node_modules
+.vscode
 build
 dist
-.yarn
+coverage
 pnpm-lock.yaml
-.next
