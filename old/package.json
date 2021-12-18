@@ -1,0 +1,101 @@
+{
+  "name": "screent",
+  "version": "0.0.0",
+  "author": {
+    "name": "itsMapleLeaf",
+    "email": "mapleleafdev0@gmail.com"
+  },
+  "description": "a fun and friendly screenshot and screen recording app",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "nodemon --exec qode --loader=esbuild-node-loader src/main.ts",
+    "build": "pnpm run-parallel -- build-*",
+    "build-main": "tsup-node",
+    "build-renderer": "vite build",
+    "start": "electron .",
+    "lint": "eslint --ext js,ts,tsx .",
+    "lint-fix": "pnpm lint -- --fix",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "run-parallel": "npm-run-all --parallel --print-label",
+    "pack": "pnpm build && electron-builder --dir",
+    "release": "pnpm build && electron-builder --publish never",
+    "release-pacman": "pnpm release -- --linux pacman",
+    "install-pacman": "sudo pacman -U \"./release/$npm_package_name-$npm_package_version.pacman\""
+  },
+  "dependencies": {
+    "@nodegui/nodegui": "^0.43.0",
+    "esbuild": "^0.14.5",
+    "esbuild-node-loader": "^0.6.3",
+    "execa": "^6.0.0",
+    "mobx": "^6.3.7",
+    "pulseaudio.js": "^1.2.0",
+    "zod": "^3.11.6"
+  },
+  "devDependencies": {
+    "@itsmapleleaf/configs": "^1.1.1",
+    "@types/node": "^16.11.10",
+    "@types/react": "^17.0.37",
+    "@types/react-dom": "^17.0.11",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "clsx": "^1.1.1",
+    "cross-env": "^7.0.3",
+    "electron": "^16.0.2",
+    "electron-builder": "^22.14.5",
+    "eslint": "^8.3.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-import-resolver-typescript": "^2.5.0",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-react": "^7.27.1",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "eslint-plugin-unicorn": "^39.0.0",
+    "fast-glob": "^3.2.7",
+    "mobx-react-lite": "^3.2.2",
+    "nodemon": "^2.0.15",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.5.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "tailwindcss": "^3.0.0-alpha.2",
+    "toml": "^3.0.0",
+    "tsup": "^5.10.0",
+    "type-fest": "^2.6.0",
+    "typescript": "^4.5.2",
+    "vite": "^2.6.14"
+  },
+  "tsup": {
+    "entryPoints": [
+      "src/app/main.ts"
+    ],
+    "target": "node16",
+    "format": [
+      "cjs"
+    ]
+  },
+  "postcss": {
+    "plugins": {
+      "tailwindcss": {}
+    }
+  },
+  "prettier": "@itsmapleleaf/configs/prettier",
+  "eslintConfig": {
+    "extends": [
+      "./node_modules/@itsmapleleaf/configs/eslint"
+    ],
+    "rules": {
+      "unicorn/filename-case": "off",
+      "unicorn/prevent-abbreviations": [
+        "warn",
+        {
+          "replacements": {
+            "props": false,
+            "args": false,
+            "ref": false
+          }
+        }
+      ]
+    }
+  }
+}
