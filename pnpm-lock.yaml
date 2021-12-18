@@ -22,20 +22,22 @@ specifiers:
   esno: ^0.13.0
   execa: ^6.0.0
   lodash-es: ^4.17.21
+  mobx: ^6.3.9
   nodemon: ^2.0.15
   prettier: ^2.5.1
   typescript: ^4.5.4
 
 dependencies:
   '@nodegui/nodegui': 0.43.0
-  '@types/lodash-es': 4.17.5
   esbuild: 0.14.5
   esno: 0.13.0_typescript@4.5.4
   execa: 6.0.0
   lodash-es: 4.17.21
+  mobx: 6.3.9
 
 devDependencies:
   '@itsmapleleaf/configs': 1.1.2
+  '@types/lodash-es': 4.17.5
   '@types/node': 17.0.0
   '@typescript-eslint/eslint-plugin': 5.7.0_a6f6159640504abdd3de077f8bcadb33
   '@typescript-eslint/parser': 5.7.0_eslint@8.5.0+typescript@4.5.4
@@ -481,9 +483,11 @@ packages:
     resolution: {integrity: sha512-SHBoI8/0aoMQWAgUHMQ599VM6ZiSKg8sh/0cFqqlQQMyY9uEplc0ULU5yQNzcvdR4ZKa0ey8+vFmahuRbOCT1A==}
     dependencies:
       '@types/lodash': 4.14.178
+    dev: true
 
   /@types/lodash/4.14.178:
     resolution: {integrity: sha512-0d5Wd09ItQWH1qFbEyQ7oTQ3GZrMfth5JkbN3EvTKLXcHLRDSXeLnlvlOn0wvxVIwK5o2M8JzP/OWz7T3NRsbw==}
+    dev: true
 
   /@types/minimatch/3.0.5:
     resolution: {integrity: sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==}
@@ -3813,6 +3817,10 @@ packages:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
     engines: {node: '>=10'}
     hasBin: true
+    dev: false
+
+  /mobx/6.3.9:
+    resolution: {integrity: sha512-u9vhETRPgx6s+MD2NhGaOQJMJa/qszflwFxKryCXotERWY77ocdrRQUp7Jwt1urjefUXNj3fQbTnKrCV+kBaXw==}
     dev: false
 
   /ms/2.0.0:

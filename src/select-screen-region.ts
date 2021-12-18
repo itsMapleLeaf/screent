@@ -13,5 +13,14 @@ export async function selectScreenRegion(): Promise<Region> {
     "--color=0.3,0.4,0.6,0.4",
     `--format={ "left": %x, "top": %y, "width": %w, "height": %h }`,
   ])
-  return JSON.parse(result.stdout)
+  const region: Region = JSON.parse(result.stdout)
+  return {
+    ...region,
+    width: floorToNearest(region.width, 2),
+    height: floorToNearest(region.height, 2),
+  }
+}
+
+function floorToNearest(value: number, step: number) {
+  return Math.floor(value / step) * step
 }

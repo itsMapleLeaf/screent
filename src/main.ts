@@ -1,11 +1,11 @@
 import { QIcon, QSystemTrayIcon } from "@nodegui/nodegui"
 import packageJson from "../package.json"
 import { createMenu } from "./menu.js"
-import { createScreenRecorder } from "./record-screen.js"
 import { hideRecordingFrame, showRecordingFrame } from "./recording-frame.js"
+import { ScreenRecorder } from "./screen-recorder.js"
 import { selectScreenRegion } from "./select-screen-region.js"
 
-let recorder: ReturnType<typeof createScreenRecorder> | undefined
+const recorder = new ScreenRecorder()
 
 const trayMenu = createMenu([
   {
@@ -13,22 +13,14 @@ const trayMenu = createMenu([
     onClick: async () => {
       const region = await selectScreenRegion()
       showRecordingFrame(region)
-
-      try {
-        recorder = createScreenRecorder(region, "test.mp4")
-        await recorder.run()
-      } catch (error) {
-        console.error(error)
-      }
-
-      recorder = undefined
+      await recorder.start(region, "test.mp4").catch(console.error)
       hideRecordingFrame()
     },
   },
   {
     label: "Stop Recording",
     onClick: () => {
-      recorder?.stop()
+      recorder.stop()
     },
   },
   {
