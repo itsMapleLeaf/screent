@@ -1,19 +1,17 @@
-import { app } from "electron"
-import { join } from "path"
-import { createRemixBrowserWindow, initRemix } from "remix-electron"
+import { app, dialog } from "electron"
+import { getErrorStack, logErrorStack } from "./common/errors"
 
-app.on("ready", async () => {
-  await initRemix()
-
-  const win = await createRemixBrowserWindow({
-    initialRoute: "/",
-    icon: join(__dirname, "../public/icon.png"),
-    show: false,
-  })
-
-  win.show()
-
-  if (process.env.NODE_ENV === "development") {
-    win.webContents.openDevTools()
+async function main() {
+  try {
+    await app.whenReady()
+    const { setupApp } = await import("./main/setup-app")
+    await setupApp()
+  } catch (error) {
+    if (app.isPackaged) {
+      dialog.showErrorBox("Error", getErrorStack(error))
+    }
+    logErrorStack(error)
+    app.quit()
   }
-})
+}
+main()
