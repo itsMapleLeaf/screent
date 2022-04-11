@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/electron-builder.json",
   "appId": "dev.mapleleaf.screent",
   "files": ["{build,public}/**/*"],
   "asar": false,
@@ -8,6 +9,7 @@
   "linux": {
     "target": ["AppImage", "deb", "pacman", "flatpak"],
     "icon": "public/icon-512x512.png",
-    "category": "Utility"
+    "category": "Utility",
+    "publish": ["github"]
   }
 }
