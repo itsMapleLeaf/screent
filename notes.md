@@ -17,6 +17,12 @@
 - [x] audio device selection
 - [x] persist selected audio device
 
+## internal
+
+- [ ] set up tailwind
+- [ ] recording: use separate processes for video and audio
+  - works around a bug where video recording is late and audio cuts off
+
 ## recording mvp
 
 - [x] start recording via hotkey
@@ -64,7 +70,6 @@
 ## bugs
 
 - [x] recording initially freezes for a few seconds
-- [ ] recording audio cuts off early
 
 ## example pulseaudio devices
 
