@@ -2,11 +2,11 @@
 
 - scrot for screenshotting (?)
 - slop for getting region
-- ffmpeg for recording video
+- ffmpeg for recording video and audio
 
 ## app
 
-- [ ] package for distribution
+- [x] package for distribution
 - [ ] improved logging - show important messages as notifications
 
 ## tray
@@ -31,9 +31,6 @@
 - [x] finish recording via tray
 - [x] figure out how to not record the actual frame
 - [x] save to file
-- [ ] config: video path
-- [ ] config: FPS
-- [ ] config: quality
 
 ## screenshot mvp
 
@@ -49,9 +46,20 @@
 - [ ] editor: copy to clipboard (closes window)
 - [ ] editor: upload and copy url (closes window)
 
-## screenshot
+## settings
 
-- [ ] configurable screenshot path
+- [ ] video path
+- [ ] video fps
+- [ ] video quality
+- [ ] screenshot path
+
+## video editor
+
+- [ ] scrubbable double-notch timeline
+
+## screenshot editor
+
+- [ ] ???
 
 ## bugs
 
