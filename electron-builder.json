@@ -1,0 +1,13 @@
+{
+  "appId": "dev.mapleleaf.screent",
+  "files": ["{build,public}/**/*"],
+  "asar": false,
+  "directories": {
+    "output": "release"
+  },
+  "linux": {
+    "target": ["AppImage", "deb", "pacman", "flatpak"],
+    "icon": "public/icon-512x512.png",
+    "category": "Utility"
+  }
+}
