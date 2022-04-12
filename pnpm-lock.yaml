@@ -24,7 +24,7 @@ specifiers:
   eslint-plugin-react: ^7.29.4
   eslint-plugin-react-hooks: ^4.4.0
   eslint-plugin-unicorn: ^42.0.0
-  execa: ^6.1.0
+  execa: ^5
   fast-glob: ^3.2.11
   mobx: ^6.5.0
   mobx-react-lite: ^3.3.0
@@ -49,7 +49,7 @@ dependencies:
   '@remix-run/node': 1.3.5_react-dom@18.0.0+react@18.0.0
   '@remix-run/react': 1.3.5_react-dom@18.0.0+react@18.0.0
   '@remix-run/server-runtime': 1.3.5_react-dom@18.0.0+react@18.0.0
-  execa: 6.1.0
+  execa: 5.1.1
   mobx: 6.5.0
   pulseaudio.js: 1.3.0
   remix-electron: 2.0.0-alpha.2_d24a32fa11aa496d2877c9959447132d
