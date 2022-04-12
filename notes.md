@@ -20,7 +20,7 @@
 ## internal
 
 - [ ] set up tailwind
-- [ ] recording: use separate processes for video and audio
+- [x] recording: use separate processes for video and audio
   - works around a bug where video recording is late and audio cuts off
 - [ ] for settings, use electron-store instead of this weird task queue thing
 
