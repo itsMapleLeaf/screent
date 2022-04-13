@@ -1,5 +1,6 @@
 import { BrowserWindow, shell } from "electron"
 import type { ExecaChildProcess } from "execa"
+import execa from "execa"
 import { makeAutoObservable } from "mobx"
 import { mkdir, unlink } from "node:fs/promises"
 import { dirname } from "node:path"
@@ -15,9 +16,6 @@ import { vec } from "../common/Vec"
 import type { AudioDevice, AudioDeviceSelector } from "./audio-devices"
 import { applyDevtoolsListener } from "./devtools"
 import { getVideoRecordingsPath } from "./paths"
-
-// execa is an ES module, and can't be required normally
-const execaPromise = import("execa")
 
 type VideoRecordingState =
   | { status: "ready" }
@@ -150,8 +148,6 @@ async function ensureRecordingOutputPath() {
 }
 
 async function selectRegion(): Promise<Rect> {
-  const { execa } = await execaPromise
-
   const result = await execa("slop", [
     "--highlight",
     "--color=0.3,0.4,0.6,0.4",
@@ -210,7 +206,6 @@ async function createRecordingChildProcess(
     .flat()
     .filter(isTruthy)
 
-  const { execa } = await execaPromise
   const child = execa(
     "ffmpeg",
     flags.flatMap((flag) => flag.split(/\s+/)),
