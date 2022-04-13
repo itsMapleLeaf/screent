@@ -7,7 +7,7 @@
     "output": "release"
   },
   "linux": {
-    "target": ["AppImage", "deb", "pacman", "flatpak"],
+    "target": ["AppImage", "flatpak"],
     "icon": "public/icon-512x512.png",
     "category": "Utility",
     "publish": ["github"]
