@@ -3,5 +3,10 @@
   "compilerOptions": {
     "jsx": "react-jsx"
   },
-  "exclude": ["node_modules", ".vscode", "dist", "coverage"]
+  "exclude": [
+    "**/node_modules/**",
+    "**/coverage/**",
+    "**/build/**",
+    "**/release/**"
+  ]
 }
