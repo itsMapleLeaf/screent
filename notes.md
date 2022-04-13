@@ -22,7 +22,9 @@
 - [ ] set up tailwind
 - [x] recording: use separate processes for video and audio
   - works around a bug where video recording is late and audio cuts off
-- [ ] for settings, use electron-store instead of this weird task queue thing
+- [x] for settings, use electron-store instead of this weird task queue thing
+- [x] for audio setting, store audio source name for reliable restoration
+- [ ] import editor code + add debug option to toggle it
 
 ## recording mvp
 

@@ -1,7 +1,7 @@
 import { configure } from "mobx"
 import { initRemix } from "remix-electron"
 import { logErrorStack } from "../common/errors"
-import { createAudioDeviceSelector } from "./audio-devices"
+import { AudioDeviceSelector } from "./audio-devices"
 import { createMainTray } from "./main-tray"
 import { tryRegisterShortcut } from "./shortcut"
 import { createVideoRecorder } from "./video-recorder"
@@ -13,7 +13,7 @@ configure({
 export async function setupApp() {
   await initRemix()
 
-  const audioDeviceSelector = await createAudioDeviceSelector()
+  const audioDeviceSelector = await AudioDeviceSelector.create()
   const recorder = await createVideoRecorder(audioDeviceSelector)
   createMainTray(recorder, audioDeviceSelector)
 
