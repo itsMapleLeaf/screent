@@ -1,5 +1,5 @@
+import { initRemix } from "@remix-electron/main"
 import { configure } from "mobx"
-import { initRemix } from "remix-electron"
 import { logErrorStack } from "../common/errors"
 import { AudioDeviceSelector } from "./audio-devices"
 import { createMainTray } from "./main-tray"

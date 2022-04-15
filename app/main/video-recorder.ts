@@ -1,8 +1,8 @@
+import { createRemixBrowserWindow } from "@remix-electron/main"
 import { shell } from "electron"
 import { makeAutoObservable } from "mobx"
 import { mkdir, unlink } from "node:fs/promises"
 import { dirname } from "node:path"
-import { createRemixBrowserWindow } from "remix-electron"
 import { z } from "zod"
 import { name as appName } from "../../package.json"
 import { isFile } from "../common/fs"
@@ -156,6 +156,7 @@ async function selectRegion(): Promise<Rect> {
     "--highlight",
     "--color=0.3,0.4,0.6,0.4",
     `--format={ "x": %x, "y": %y, "width": %w, "height": %h }`,
+    "--noopengl",
   ])
 
   const regionSchema = z.object({
