@@ -1,9 +1,9 @@
-import execa, { ExecaChildProcess, Options as ExecaOptions } from "execa"
+import { ExecaChildProcess } from "execa"
 import { rm } from "node:fs/promises"
-import { isDevelopment } from "../common/constants"
 import { isTruthy } from "../common/is-truthy"
 import { Rect } from "../common/Rect"
 import { AudioDevice } from "./audio-devices"
+import { runFFmpeg } from "./ffmpeg"
 
 export class VideoRecordingProcess {
   private promise: Promise<unknown>
@@ -15,64 +15,47 @@ export class VideoRecordingProcess {
     outputPath: string,
     audioDevice: AudioDevice | undefined,
   ) {
-    const processOptions: ExecaOptions = {
-      stdout: isDevelopment ? "inherit" : "ignore",
-      stderr: isDevelopment ? "inherit" : "ignore",
-    }
-
     const videoOutputPath = outputPath + ".mp4"
     const audioOutputPath = outputPath + ".ogg"
 
-    this.videoProcess = execa(
-      "ffmpeg",
-      toCommandArgs(
-        // video input
-        `-f x11grab`,
-        `-framerate 25`,
-        `-video_size ${region.width}x${region.height}`,
-        `-thread_queue_size 128`, // fixes a "thread queue is blocking" warning
-        `-i ${process.env.DISPLAY || ":0"}.0+${region.left},${region.top}`,
+    this.videoProcess = runFFmpeg(
+      // video input
+      `-f x11grab`,
+      `-framerate 25`,
+      `-video_size ${region.width}x${region.height}`,
+      `-thread_queue_size 128`, // fixes a "thread queue is blocking" warning
+      `-i ${process.env.DISPLAY || ":0"}.0+${region.left},${region.top}`,
 
-        // video output options
-        `-codec:v libx264`,
-        `-preset fast`,
-        `-pix_fmt yuv420p`, // allows playback in VLC and other video players
+      // video output options
+      `-codec:v libx264`,
+      `-preset fast`,
+      `-pix_fmt yuv420p`, // allows playback in VLC and other video players
 
-        videoOutputPath,
-      ),
-      processOptions,
+      videoOutputPath,
     )
 
     this.audioProcess = audioDevice
-      ? execa(
-          "ffmpeg",
-          toCommandArgs(
-            // audio input
-            `-f pulse`,
-            `-i ${audioDevice.id}`,
+      ? runFFmpeg(
+          // audio input
+          `-f pulse`,
+          `-i ${audioDevice.id}`,
 
-            // audio output options
-            `-codec:a libvorbis`,
-            `-ac ${audioDevice.channelCount ?? "2"}`,
-            `-ar ${audioDevice.sampleRate ?? "48000"}`,
+          // audio output options
+          `-codec:a libvorbis`,
+          `-ac ${audioDevice.channelCount ?? "2"}`,
+          `-ar ${audioDevice.sampleRate ?? "48000"}`,
 
-            audioOutputPath,
-          ),
-          processOptions,
+          audioOutputPath,
         )
       : undefined
 
     this.promise = Promise.all([this.videoProcess, this.audioProcess])
       .then(() => {
-        return execa(
-          "ffmpeg",
-          toCommandArgs(
-            `-i ` + videoOutputPath,
-            `-i ` + audioOutputPath,
-            `-c copy`,
-            outputPath,
-          ),
-          processOptions,
+        return runFFmpeg(
+          `-i ` + videoOutputPath,
+          `-i ` + audioOutputPath,
+          `-c copy`,
+          outputPath,
         )
       })
       .finally(() => {
