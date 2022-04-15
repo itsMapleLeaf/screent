@@ -1,6 +1,5 @@
 import { ExecaChildProcess } from "execa"
 import { rm } from "node:fs/promises"
-import { isTruthy } from "../common/is-truthy"
 import { Rect } from "../common/Rect"
 import { AudioDevice } from "./audio-devices"
 import { runFFmpeg } from "./ffmpeg"
@@ -75,10 +74,3 @@ export class VideoRecordingProcess {
     this.audioProcess?.stdin?.write("q")
   }
 }
-
-type NestedArray<T> = Array<T | NestedArray<T>>
-
-const toCommandArgs = (...strings: NestedArray<string>) =>
-  (strings.flat() as readonly string[])
-    .filter(isTruthy)
-    .flatMap((flag) => flag.split(/\s+/))
