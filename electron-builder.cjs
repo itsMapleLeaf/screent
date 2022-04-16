@@ -11,10 +11,19 @@ const config = {
     output: "release",
   },
   linux: {
-    target: ["AppImage", "flatpak"],
+    target: ["AppImage", "deb", "rpm", "pacman"],
     icon: "assets/icons/linux",
     category: "Utility",
     publish: ["github"],
+  },
+  deb: {
+    depends: ["ffmpeg", "slop"],
+  },
+  rpm: {
+    depends: ["ffmpeg", "slop"],
+  },
+  pacman: {
+    depends: ["ffmpeg", "slop"],
   },
   beforePack: async () => {
     const projectRoot = __dirname
