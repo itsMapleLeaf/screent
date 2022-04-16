@@ -1,4 +1,4 @@
-import { ExecaChildProcess } from "execa"
+import execa, { ExecaChildProcess } from "execa"
 import { rm } from "node:fs/promises"
 import { Rect } from "../common/Rect"
 import { AudioDevice } from "./audio-devices"
@@ -34,17 +34,17 @@ export class VideoRecordingProcess {
     )
 
     this.audioProcess = audioDevice
-      ? runFFmpeg(
-          // audio input
-          `-f pulse`,
-          `-i ${audioDevice.id}`,
-
-          // audio output options
-          `-codec:a libvorbis`,
-          `-ac ${audioDevice.channelCount ?? "2"}`,
-          `-ar ${audioDevice.sampleRate ?? "48000"}`,
-
-          audioOutputPath,
+      ? execa(
+          "parec",
+          [
+            `--device=${audioDevice.id}`,
+            `--rate=48000`,
+            `--channels=2`,
+            `--file-format=oga`,
+            `--verbose`,
+            audioOutputPath,
+          ],
+          { stderr: "inherit" },
         )
       : undefined
 
