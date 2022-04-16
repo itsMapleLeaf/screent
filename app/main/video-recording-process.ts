@@ -58,6 +58,12 @@ export class VideoRecordingProcess {
         )
       })
       .finally(() => {
+        if (!this.videoProcess.killed) {
+          this.videoProcess.kill()
+        }
+        if (this.audioProcess && !this.audioProcess.killed) {
+          this.audioProcess.kill()
+        }
         return Promise.all([
           rm(videoOutputPath, { force: true }),
           rm(audioOutputPath, { force: true }),
@@ -71,6 +77,6 @@ export class VideoRecordingProcess {
 
   stop() {
     this.videoProcess.stdin?.write("q")
-    this.audioProcess?.stdin?.write("q")
+    this.audioProcess?.kill("SIGINT")
   }
 }
